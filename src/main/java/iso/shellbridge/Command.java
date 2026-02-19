@@ -4,7 +4,7 @@ import java.io.BufferedReader;
 import java.io.IOException;
 import java.io.InputStreamReader;
 /***
- * A class that provides the ability to exececute commands, something that has been complicated in java
+ * A class that provides the ability to execute commands, something that has been complicated in java
  * for a while now. With the new Command class, you can run, execute and get the output of commands.***/
 public class Command {
     private String command;
