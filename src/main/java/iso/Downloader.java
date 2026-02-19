@@ -29,7 +29,7 @@ public class Downloader {
             progressBar.setMaximum(100);
 
             try (InputStream in = conn.getInputStream();
-                 FileOutputStream fos = new FileOutputStream(output)) {
+                 FileOutputStream fos = new FileOutputStream(output, true)) {
 
                 byte[] buffer = new byte[8192];
                 int bytesRead;
