@@ -6,9 +6,8 @@ import javax.swing.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
-import java.net.MalformedURLException;
+import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLConnection;
 import java.nio.channels.Channels;
 import java.nio.channels.ReadableByteChannel;
 
@@ -19,17 +18,37 @@ public class Downloader {
         }
     }
 
-    public static void downloadFileWithProgress(JProgressBar progressBar, JLabel label, URL url, String output) {
+    public static void downloadFileWithProgress(JProgressBar progressBar,
+                                                JLabel label,
+                                                URL url,
+                                                String output) {
+
         try {
-            URLConnection conn = url.openConnection();
+            HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+            conn.setInstanceFollowRedirects(true);
+            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+
+            conn.connect();
+
+            int responseCode = conn.getResponseCode();
+
+            // Handle redirect manually (important for GitHub)
+            if (responseCode / 100 == 3) {
+                String newUrl = conn.getHeaderField("Location");
+                conn.disconnect();
+
+                conn = (HttpURLConnection) new URL(newUrl).openConnection();
+                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
+                conn.connect();
+            }
+
             long totalSize = conn.getContentLengthLong();
 
-            // Configure progress bar
             progressBar.setMinimum(0);
             progressBar.setMaximum(100);
 
             try (InputStream in = conn.getInputStream();
-                 FileOutputStream fos = new FileOutputStream(output, true)) {
+                 FileOutputStream fos = new FileOutputStream(output)) {
 
                 byte[] buffer = new byte[8192];
                 int bytesRead;
@@ -59,7 +78,4 @@ public class Downloader {
             throw new RuntimeException(e);
         }
     }
-
-
-
 }

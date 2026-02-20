@@ -1,11 +1,36 @@
+import iso.Downloader;
 import iso.MDEngine;
 
 import javax.swing.*;
 import java.awt.*;
 import java.util.ArrayList;
+//Main Window
+JFrame frame = new JFrame("T2 Linux ISO Downloader");
+JPanel panel = new JPanel(new GridBagLayout());
+
+//Progress bar
+JProgressBar progressBar = new JProgressBar();
+JLabel statusLabel = new JLabel("Ready");
+JButton downloadButton = new JButton("Download ISO");
+
+
+//Flavour menu
+JLabel flavourLabel = new JLabel("Flavour:");
+JComboBox<String> flavourBox = new JComboBox<>();
+
+//Version  menu
+JLabel versionLabel = new JLabel("Version:");
+JComboBox<String> versionBox = new JComboBox<>();
+
+//Layout
+GridBagConstraints gbc = new GridBagConstraints();
+
+//Mardown engine to read the meta data
+MDEngine engine = new MDEngine();
+
 
 void start() {
-    MDEngine engine = new MDEngine();
+    //Setting up the engine
     try {
         engine.readMetadata();
     } catch (IOException e) {
@@ -13,32 +38,23 @@ void start() {
     }
     ArrayList<String> items = engine.mergeToSingleLine(engine.getMetadata("Ubuntu"));
     items.addAll(engine.mergeToSingleLine(engine.getMetadata("Mint")));
-
+    //Setting the theme to the system theme
     try {
         UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
     } catch (Exception e) {
         throw new RuntimeException(e);
     }
 
-    JFrame frame = new JFrame("T2 Linux ISO Downloader");
+    //Setting up the Window defaults.
     frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
     frame.setSize(520, 300);
     frame.setLocationRelativeTo(null);
-
-    JPanel panel = new JPanel(new GridBagLayout());
     panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
 
-    GridBagConstraints gbc = new GridBagConstraints();
     gbc.insets = new Insets(10, 10, 10, 10);
     gbc.fill = GridBagConstraints.HORIZONTAL;
 
-    JLabel flavourLabel = new JLabel("Flavour:");
-    JComboBox<String> flavourBox = new JComboBox<>();
-
-    JLabel versionLabel = new JLabel("Version:");
-    JComboBox<String> versionBox = new JComboBox<>();
-
-    // Safe population
+    // Population of the menus
     var seen = new java.util.HashSet<String>();
 
     for (String line : items) {
@@ -54,6 +70,7 @@ void start() {
 
         versionBox.addItem(version);
     }
+    // FIlters the version menu when Ubuntu is selected
     flavourBox.addActionListener(e -> {
         String selected = (String) flavourBox.getSelectedItem();
 
@@ -80,16 +97,20 @@ void start() {
             versionBox.addItem(version);
         }
     });
+    //Workaround to fix duplicate antries in flavour menu.
     flavourBox.setSelectedIndex(0);
+    downloadButton.addActionListener(e ->{
+        try {
+            download(items, String.valueOf(flavourBox.getSelectedItem()),String.valueOf(versionBox.getSelectedItem()));
+        } catch (URISyntaxException | MalformedURLException ex) {
+            throw new RuntimeException(ex);
+        }
+    });
 
-    JProgressBar progressBar = new JProgressBar();
     progressBar.setStringPainted(true);
-
-    JLabel statusLabel = new JLabel("Ready");
     statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
 
-    JButton downloadButton = new JButton("Download ISO");
-
+    //Sets up the position of the components
     gbc.gridx = 0; gbc.gridy = 0;
     panel.add(flavourLabel, gbc);
 
@@ -125,6 +146,29 @@ void checkOS() {
     }
 }
 
+void download(ArrayList<String> meta, String edition, String version) throws URISyntaxException, MalformedURLException {
+    String iso = edition+"-"+version;
+    iso = iso.replace(" ", "").replace(".", "");
+    int n = 2;
+    if(edition.contains("Ubuntu") || edition.contains("ubuntu"))n+=1;
+
+    for(String i : meta) {
+        String[] data = i.split(",");
+        if (i.contains(data[0])) {
+            if(i.contains(data[1]) || i.contains(data[2])) {
+                Downloader.downloadFileWithProgress(progressBar, statusLabel,
+                        new URI(data[n]).toURL(), "~/Downloads/" + iso);
+                Downloader.downloadFileWithProgress(progressBar, statusLabel,
+                        new URI(data[n + 1]).toURL(), "~/Downloads/" + iso);
+                if (edition.contains("Ubuntu") || edition.contains("ubuntu")) {
+                    Downloader.downloadFileWithProgress(progressBar, statusLabel,
+                            new URI(data[n + 5]).toURL(), "~/Downloads/" + iso);
+                }
+            }
+
+        }
+    }
+}
 void main() {
     checkOS();
     SwingUtilities.invokeLater(this::start);

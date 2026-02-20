@@ -164,11 +164,22 @@ public class MDEngine {
     }
 
     //FOR TESTING PURPOSES ONLY
-    static void main() throws IOException {
-        MDEngine engine = new MDEngine();
-        engine.readMetadata();
-        for(String i : engine.mergeToSingleLine(engine.getMetadata("Mint"))) System.out.println(i);
-        for(String i : engine.mergeToSingleLine(engine.getMetadata("Ubuntu"))) System.out.println(i);
-
-    }
+//    static void main() throws IOException {
+//        MDEngine engine = new MDEngine();
+//        engine.readMetadata();
+////        for(String i : engine.mergeToSingleLine(engine.getMetadata("Mint"))){
+////            String[] data = i.split(",");
+////            System.out.println(data[2]);
+////            System.out.println(data[3]);
+////        }
+//        for(String i : engine.mergeToSingleLine(engine.getMetadata("Ubuntu"))){
+//            System.out.println(i);
+////            String[] data = i.split(",");
+//////            System.out.println(Arrays.toString(data));
+////            System.out.println(data[3]);
+////            System.out.println(data[4]);
+////            System.out.prin tln(data[5]);
+//        }
+//
+//    }
 }
