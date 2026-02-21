@@ -5,7 +5,14 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e31a08c5-a65b-4685-9078-48ffce7af569" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/FileIO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/FileIO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/MDEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/MDEngine.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Command.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/CommandList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/CommandList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Script.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Script.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -41,6 +48,9 @@
     <commands />
     <urls />
   </component>
+  <component name="ProblemsViewState">
+    <option name="selectedTabId" value="CurrentFile" />
+  </component>
   <component name="ProjectColorInfo">{
   &quot;associatedIndex&quot;: 0
 }</component>
@@ -73,6 +83,7 @@
     "project.structure.last.edited": "Project",
     "project.structure.proportion": "0.0",
     "project.structure.side.proportion": "0.0",
+    "run.code.analysis.last.selected.profile": "pProject Default",
     "settings.editor.selected.configurable": "inlay.hints",
     "vue.rearranger.settings.migration": "true"
   }
@@ -101,7 +112,7 @@
       <workItem from="1771592911284" duration="54000" />
       <workItem from="1771592994016" duration="1383000" />
       <workItem from="1771600597786" duration="7928000" />
-      <workItem from="1771684930822" duration="5487000" />
+      <workItem from="1771684930822" duration="6085000" />
     </task>
     <servers />
   </component>

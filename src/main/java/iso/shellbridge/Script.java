@@ -2,8 +2,10 @@ package iso.shellbridge;
 /***
  * A special wrapper for the command class to run scripts on *nix based systems.
 ***/
+@SuppressWarnings("unused")
 public class Script {
     private Command command, chmod;
+    @SuppressWarnings({"CanBeFinal", "FieldMayBeFinal"})
     private String script;
     public Script(String path){
         this.script =path;

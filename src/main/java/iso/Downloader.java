@@ -65,7 +65,9 @@ public class Downloader {
                     JOptionPane.YES_NO_OPTION);
 
             if (choice == JOptionPane.NO_OPTION) {
-                new java.io.File(output).delete();
+                var f = new java.io.File(output);
+                //noinspection unused
+                var b = f.delete();
             }
         }
     }

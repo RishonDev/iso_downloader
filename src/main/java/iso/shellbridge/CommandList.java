@@ -6,6 +6,7 @@ import java.util.Arrays;
 /***
  * A class that allows you to run multiple Command classes.
 ***/
+@SuppressWarnings("unused")
 public class CommandList {
     ArrayList<Command> c = new ArrayList<>();
     /***

@@ -3,29 +3,26 @@ import iso.MDEngine;
 
 import javax.swing.*;
 import java.awt.*;
-import java.io.File;
-import java.security.MessageDigest;
-import java.util.ArrayList;
 
-String home = System.getProperty("user.home");
+final String home = System.getProperty("user.home");
 
-JFrame frame = new JFrame("T2 Linux ISO Downloader");
-JPanel panel = new JPanel(new GridBagLayout());
+final JFrame frame = new JFrame("T2 Linux ISO Downloader");
+final JPanel panel = new JPanel(new GridBagLayout());
 
-JProgressBar progressBar = new JProgressBar();
-JLabel statusLabel = new JLabel("Ready");
-JLabel partLabel = new JLabel("Waiting to start...");
-JButton downloadButton = new JButton("Download ISO");
+final JProgressBar progressBar = new JProgressBar();
+final JLabel statusLabel = new JLabel("Ready");
+final JLabel partLabel = new JLabel("Waiting to start...");
+final JButton downloadButton = new JButton("Download ISO");
 
-JLabel flavourLabel = new JLabel("Flavour:");
-JComboBox<String> flavourBox = new JComboBox<>();
+final JLabel flavourLabel = new JLabel("Flavour:");
+final JComboBox<String> flavourBox = new JComboBox<>();
 
-JLabel versionLabel = new JLabel("Version:");
-JComboBox<String> versionBox = new JComboBox<>();
+final JLabel versionLabel = new JLabel("Version:");
+final JComboBox<String> versionBox = new JComboBox<>();
 
-GridBagConstraints gbc = new GridBagConstraints();
+final GridBagConstraints gbc = new GridBagConstraints();
 
-MDEngine engine = new MDEngine();
+final MDEngine engine = new MDEngine();
 
 void showError(String message) {
     SwingUtilities.invokeLater(() ->
@@ -87,17 +84,15 @@ void start() {
 
     flavourBox.setSelectedIndex(0);
 
-    downloadButton.addActionListener(_ -> {
-        new Thread(() -> {
-            try {
-                download(items,
-                        flavourBox.getSelectedItem().toString(),
-                        versionBox.getSelectedItem().toString());
-            } catch (Exception ex) {
-                showError(ex.getMessage());
-            }
-        }).start();
-    });
+    downloadButton.addActionListener(_ -> new Thread(() -> {
+        try {
+            download(items,
+                    Objects.requireNonNull(flavourBox.getSelectedItem()).toString(),
+                    Objects.requireNonNull(versionBox.getSelectedItem()).toString());
+        } catch (Exception ex) {
+            showError(ex.getMessage());
+        }
+    }).start());
 
     progressBar.setStringPainted(true);
     statusLabel.setHorizontalAlignment(SwingConstants.CENTER);

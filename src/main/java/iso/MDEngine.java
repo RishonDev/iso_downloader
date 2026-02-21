@@ -5,6 +5,8 @@ import java.io.File;
 import java.io.FileReader;
 import java.io.IOException;
 import java.net.MalformedURLException;
+import java.net.URI;
+import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
@@ -14,11 +16,12 @@ public class MDEngine {
     private URL metadata;
     {
         try {
-            metadata = new URL("https://raw.githubusercontent.com/t2linux/wiki/refs/heads/master/docs/tools/distro-metadata.json");
-        } catch (MalformedURLException e) {
+            metadata = new URI("https://raw.githubusercontent.com/t2linux/wiki/refs/heads/master/docs/tools/distro-metadata.json").toURL();
+        } catch (MalformedURLException | URISyntaxException e) {
             throw new RuntimeException(e);
         }
     }
+    @SuppressWarnings("CanBeFinal")
     ArrayList<String> contents = new ArrayList<>();
     private final String home = System.getProperty("user.home");
     public void readMetadata() throws IOException {
@@ -35,7 +38,7 @@ public class MDEngine {
             }
         }
     }
-
+/*
     public ArrayList<String> getMetadata() {
         ArrayList<String> lines = new ArrayList<>();
 
@@ -60,7 +63,7 @@ public class MDEngine {
 
         return lines;
     }
-
+*/
     public ArrayList<String> getMetadata(String filter) {
         ArrayList<String> lines = new ArrayList<>();
 
@@ -96,14 +99,6 @@ public class MDEngine {
         return lines;
     }
 
-
-    public String getMeta() {
-        return metadata.toExternalForm();
-    }
-
-    public void setMeta(URL metadata) {
-        this.metadata = metadata;
-    }
     public ArrayList<String> mergeToSingleLine(ArrayList<String> input) {
         Map<String, ArrayList<String>> map = new LinkedHashMap<>();
 
@@ -162,23 +157,4 @@ public class MDEngine {
     }
 
     //FOR TESTING PURPOSES ONLY
-//    static void main() throws IOException {
-//        MDEngine engine = new MDEngine();
-//        engine.readMetadata();
-//        for(String i : engine.mergeToSingleLine(engine.getMetadata("Mint"))){
-//            String[] data = i.split(",");
-//            System.out.println(data[2]);
-//            System.out.println(data[3]);
-//        }
-//        for(String i : engine.mergeToSingleLine(engine.getMetadata("Ubuntu"))){
-////            System.out.println(i);
-//            String[] data = i.split(",");
-//            if(i.contains(data[0])){
-//                System.out.println(data[3]);
-//                System.out.println(data[4]);
-//                System.out.println(data[5]);
-//            }
-//        }
-//
-//    }
 }

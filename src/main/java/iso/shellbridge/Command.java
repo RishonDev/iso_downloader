@@ -6,6 +6,7 @@ import java.io.InputStreamReader;
 /***
  * A class that provides the ability to execute commands, something that has been complicated in java
  * for a while now. With the new Command class, you can run, execute and get the output of commands.***/
+@SuppressWarnings("unused")
 public class Command {
     private String command;
     private String output;
@@ -30,7 +31,7 @@ public class Command {
      * This lets you ***/
     public void exec() throws IOException, InterruptedException {
         ProcessBuilder pb = new ProcessBuilder(command.split(" ")); // Linux/macOS
-        Process process = null;
+        Process process;
         process = pb.start();
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream()));
@@ -44,7 +45,7 @@ public class Command {
      * ***/
     public void run(){
         ProcessBuilder pb = new ProcessBuilder(command.split(" ")); // Linux/macOS
-        Process process = null;
+        Process process;
         try {
             process = pb.start();
         } catch (IOException e) {
@@ -55,7 +56,7 @@ public class Command {
         String line;
         while (true) {
             try {
-                if (!((line = reader.readLine()) != null)) break;
+                if ((line = reader.readLine()) != null) break;
             } catch (IOException e) {
                 throw new RuntimeException(e);
             }
