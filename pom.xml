@@ -33,7 +33,7 @@
                 <configuration>
                     <archive>
                         <manifest>
-                            <mainClass>iso.Main</mainClass>
+                            <mainClass>iso.T2ISO</mainClass>
                         </manifest>
                     </archive>
                 </configuration>
