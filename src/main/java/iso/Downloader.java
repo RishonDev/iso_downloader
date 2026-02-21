@@ -1,23 +1,25 @@
 package iso;
 
-import iso.FileIO;
-
 import javax.swing.*;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.nio.channels.Channels;
-import java.nio.channels.ReadableByteChannel;
 
 public class Downloader {
     public static void downloadFile(URL url, String outputFileName) throws IOException {
-        try (InputStream in = url.openStream(); ReadableByteChannel rbc = Channels.newChannel(in); FileOutputStream fos = new FileOutputStream(outputFileName)) {
-            fos.getChannel().transferFrom(rbc, 0, Long.MAX_VALUE);
+        try (InputStream in = url.openStream();
+             FileOutputStream fos = new FileOutputStream(outputFileName)) {
+
+            byte[] buffer = new byte[8192];
+            int bytesRead;
+
+            while ((bytesRead = in.read(buffer)) != -1) {
+                fos.write(buffer, 0, bytesRead);
+            }
         }
     }
-
     public static void downloadFileWithProgress(JProgressBar progressBar,
                                                 JLabel label,
                                                 URL url,
@@ -25,57 +27,46 @@ public class Downloader {
 
         try {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-            conn.setInstanceFollowRedirects(true);
-            conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-
+            conn.setRequestProperty("User-Agent","Mozilla/5.0");
+            conn.setConnectTimeout(15000);
+            conn.setReadTimeout(15000);
             conn.connect();
-
-            int responseCode = conn.getResponseCode();
-
-            // Handle redirect manually (important for GitHub)
-            if (responseCode / 100 == 3) {
-                String newUrl = conn.getHeaderField("Location");
-                conn.disconnect();
-
-                conn = (HttpURLConnection) new URL(newUrl).openConnection();
-                conn.setRequestProperty("User-Agent", "Mozilla/5.0");
-                conn.connect();
-            }
 
             long totalSize = conn.getContentLengthLong();
 
-            progressBar.setMinimum(0);
-            progressBar.setMaximum(100);
-
             try (InputStream in = conn.getInputStream();
-                 FileOutputStream fos = new FileOutputStream(output)) {
+                 FileOutputStream fos = new FileOutputStream(output, true)) {
 
                 byte[] buffer = new byte[8192];
                 int bytesRead;
                 long totalRead = 0;
 
                 while ((bytesRead = in.read(buffer)) != -1) {
-                    fos.write(buffer, 0, bytesRead);
+                    fos.write(buffer,0,bytesRead);
                     totalRead += bytesRead;
 
+                    int percent = totalSize>0 ? (int)((totalRead*100)/totalSize) : 0;
+
                     long finalTotalRead = totalRead;
-
-                    int percent = totalSize > 0
-                            ? (int) ((finalTotalRead * 100) / totalSize)
-                            : 0;
-
                     SwingUtilities.invokeLater(() -> {
                         label.setText("Downloaded "
-                                + (finalTotalRead / 1024 / 1024) + "MB / "
-                                + (totalSize / 1024 / 1024) + "MB");
-
+                                + (finalTotalRead/1024/1024)+"MB / "
+                                + (totalSize/1024/1024)+"MB");
                         progressBar.setValue(percent);
                     });
                 }
             }
 
-        } catch (IOException e) {
-            throw new RuntimeException(e);
+        } catch (Exception e) {
+
+            int choice = JOptionPane.showConfirmDialog(null,
+                    "Download failed or timed out.\nKeep partial file?",
+                    "Download Error",
+                    JOptionPane.YES_NO_OPTION);
+
+            if (choice == JOptionPane.NO_OPTION) {
+                new java.io.File(output).delete();
+            }
         }
     }
 }

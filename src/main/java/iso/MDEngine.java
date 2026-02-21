@@ -7,7 +7,6 @@ import java.io.IOException;
 import java.net.MalformedURLException;
 import java.net.URL;
 import java.util.ArrayList;
-import java.util.Arrays;
 import java.util.LinkedHashMap;
 import java.util.Map;
 
@@ -23,9 +22,8 @@ public class MDEngine {
     ArrayList<String> contents = new ArrayList<>();
     private final String home = System.getProperty("user.home");
     public void readMetadata() throws IOException {
-        File dir = new File(home + "/Downloads/");
-        dir.mkdirs();
-
+        File dir = new File(home + "/.iso/");
+        boolean b = dir.mkdirs();
         File jsonFile = new File(dir, "distro-metadata.json");
 
         Downloader.downloadFile(metadata, jsonFile.getAbsolutePath());
@@ -167,18 +165,19 @@ public class MDEngine {
 //    static void main() throws IOException {
 //        MDEngine engine = new MDEngine();
 //        engine.readMetadata();
-////        for(String i : engine.mergeToSingleLine(engine.getMetadata("Mint"))){
-////            String[] data = i.split(",");
-////            System.out.println(data[2]);
-////            System.out.println(data[3]);
-////        }
+//        for(String i : engine.mergeToSingleLine(engine.getMetadata("Mint"))){
+//            String[] data = i.split(",");
+//            System.out.println(data[2]);
+//            System.out.println(data[3]);
+//        }
 //        for(String i : engine.mergeToSingleLine(engine.getMetadata("Ubuntu"))){
-//            System.out.println(i);
-////            String[] data = i.split(",");
-//////            System.out.println(Arrays.toString(data));
-////            System.out.println(data[3]);
-////            System.out.println(data[4]);
-////            System.out.prin tln(data[5]);
+////            System.out.println(i);
+//            String[] data = i.split(",");
+//            if(i.contains(data[0])){
+//                System.out.println(data[3]);
+//                System.out.println(data[4]);
+//                System.out.println(data[5]);
+//            }
 //        }
 //
 //    }
