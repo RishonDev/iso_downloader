@@ -15,7 +15,6 @@ jobs:
       - name: Checkout
         uses: actions/checkout@v4
 
-      # Install GraalVM via official action (no manual JDK install)
       - name: Setup GraalVM
         uses: graalvm/setup-graalvm@v1
         with:
@@ -23,30 +22,21 @@ jobs:
           java-version: '25'
           components: native-image
 
-      # Build your jar (change depending on your build tool)
-      - name: Build jar
-        run: |
-          ./gradlew build
-        # OR:
-        # mvn -B package
+      - name: Build with Maven
+        run: mvn -B package
 
       - name: Build native image
         run: |
           native-image \
             --no-fallback \
-            -jar build/libs/*.jar \
+            -jar target/*.jar \
             app
 
       - name: Rename artifact
-        run: |
-          if [[ "${{ runner.os }}" == "Windows" ]]; then
-            mv app app.exe
-          else
-            mv app app-${{ runner.os }}
-          fi
+        run: mv app app-${{ runner.os }}
 
       - name: Upload artifact
         uses: actions/upload-artifact@v4
         with:
           name: native-${{ runner.os }}
-          path: app*
+          path: app-${{ runner.os }}
