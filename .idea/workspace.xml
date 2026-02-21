@@ -5,8 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="e31a08c5-a65b-4685-9078-48ffce7af569" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/native-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/native-build.yml" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />

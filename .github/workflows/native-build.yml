@@ -1,42 +1,30 @@
-name: Build Native Executables
+name: Build Native + Release
 
 on:
   workflow_dispatch:
+    inputs:
+      version:
+        description: "Version (example: v0.1.0)"
+        required: true
 
 jobs:
   build:
-    strategy:
-      matrix:
-        os: [ubuntu-latest, macos-latest]
+    runs-on: ubuntu-latest
 
-    runs-on: ${{ matrix.os }}
+    permissions:
+      contents: write
 
     steps:
-      - name: Checkout
-        uses: actions/checkout@v4
+      - uses: actions/checkout@v4
 
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
-        with:
-          distribution: graalvm-community
-          java-version: '25'
-          components: native-image
-
-      - name: Build with Maven
-        run: mvn -B package
-
-      - name: Build native image
+      - name: Create tag
         run: |
-          native-image \
-            --no-fallback \
-            -jar target/*.jar \
-            app
+          git config user.name "github-actions"
+          git config user.email "actions@github.com"
+          git tag ${{ github.event.inputs.version }}
+          git push origin ${{ github.event.inputs.version }}
 
-      - name: Rename artifact
-        run: mv app app-${{ runner.os }}
-
-      - name: Upload artifact
-        uses: actions/upload-artifact@v4
+      - name: Create release
+        uses: softprops/action-gh-release@v2
         with:
-          name: native-${{ runner.os }}
-          path: app-${{ runner.os }}
+          tag_name: ${{ github.event.inputs.version }}
