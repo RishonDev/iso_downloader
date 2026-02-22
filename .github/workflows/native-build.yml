@@ -9,8 +9,12 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
-      target/*.jar
+    strategy:
+      matrix:
+        os: [ubuntu-latest, macos-latest]
+
+    runs-on: ${{ matrix.os }}
+
     permissions:
       contents: write
 
@@ -22,7 +26,6 @@ jobs:
         with:
           distribution: graalvm-community
           java-version: '25'
-          components: native-image
 
       - name: Build jar
         run: mvn -B package
@@ -32,24 +35,56 @@ jobs:
           native-image \
             --no-fallback \
             --add-modules=java.desktop \
-            --initialize-at-build-time \
+            --initialize-at-run-time=sun.awt.X11.XToolkit \
             -Djava.awt.headless=false \
-            -H:+AddAllCharsets \
-            --enable-url-protocols=http,https \
-            -jar target/*.jar iso_downloader \
-            --initialize-at-run-time=sun.awt.X11.XToolkit
+            -jar target/*.jar iso_downloader
+
+      # ---------- macOS bundle ----------
+      - name: Create .app bundle (macOS)
+        if: runner.os == 'macOS'
+        run: |
+          mkdir -p IsoDownloader.app/Contents/MacOS
+          mkdir -p IsoDownloader.app/Contents
+
+          cp iso_downloader IsoDownloader.app/Contents/MacOS/
+
+          cat > IsoDownloader.app/Contents/Info.plist <<EOF
+          <?xml version="1.0" encoding="UTF-8"?>
+          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
+          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+          <plist version="1.0">
+          <dict>
+              <key>CFBundleName</key>
+              <string>Iso Downloader</string>
+              <key>CFBundleExecutable</key>
+              <string>iso_downloader</string>
+              <key>CFBundleIdentifier</key>
+              <string>dev.rishon.isodownloader</string>
+              <key>CFBundleVersion</key>
+              <string>${{ github.event.inputs.version }}</string>
+              <key>CFBundlePackageType</key>
+              <string>APPL</string>
+          </dict>
+          </plist>
+          EOF
+
+      - name: Rename Linux binary
+        if: runner.os == 'Linux'
+        run: mv iso_downloader iso_downloader-linux
 
       - name: Create tag
+        if: matrix.os == 'ubuntu-latest'
         run: |
           git config user.name "github-actions"
           git config user.email "actions@github.com"
           git tag ${{ github.event.inputs.version }}
           git push origin ${{ github.event.inputs.version }}
 
-      - name: Create release and upload binary
+      - name: Release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
           files: |
-            iso_downloader
+            iso_downloader-linux
+            IsoDownloader.app
             target/*.jar
