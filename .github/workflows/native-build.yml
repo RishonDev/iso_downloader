@@ -37,7 +37,8 @@ jobs:
             --add-modules=java.desktop \
             --initialize-at-run-time=sun.awt.X11.XToolkit \
             -Djava.awt.headless=false \
-            -jar target/*.jar iso_downloader
+            -jar target/*.jar \
+            iso_downloader
 
       # ---------- macOS bundle ----------
       - name: Create .app bundle (macOS)
