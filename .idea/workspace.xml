@@ -4,13 +4,7 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/T2ISO$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/iso/T2ISO$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/T2ISO.class" beforeDir="false" afterPath="$PROJECT_DIR$/target/classes/iso/T2ISO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/iso-0.1-beta.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" afterPath="$PROJECT_DIR$/target/maven-archiver/pom.properties" afterDir="false" />
-    </list>
+    <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="" />
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
     <option name="HIGHLIGHT_NON_ACTIVE_CHANGELIST" value="false" />
@@ -75,7 +69,7 @@
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
       <updated>1771725898267</updated>
-      <workItem from="1771725910481" duration="8743000" />
+      <workItem from="1771725910481" duration="9144000" />
     </task>
     <servers />
   </component>
