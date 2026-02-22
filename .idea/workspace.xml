@@ -5,8 +5,9 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/native-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/native-build.yml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/vcs.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -87,7 +88,7 @@
       <workItem from="1771754665080" duration="49000" />
       <workItem from="1771756164938" duration="110000" />
       <workItem from="1771756289601" duration="1820000" />
-      <workItem from="1771758934974" duration="4778000" />
+      <workItem from="1771758934974" duration="5744000" />
     </task>
     <servers />
   </component>
