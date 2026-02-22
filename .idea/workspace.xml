@@ -5,33 +5,8 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/compiler.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/jarRepositories.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.github/workflows/native-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/native-build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/Downloader.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/FileIO.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/MDEngine.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/T2ISO$1.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/T2ISO.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/shellbridge/Command.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/shellbridge/CommandList.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/classes/iso/shellbridge/Script.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/iso-0.2-beta.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-archiver/pom.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/iso_downloader" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libawt.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libawt_headless.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libawt_xawt.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libfontmanager.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libjava.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libjavajpeg.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/libjvm.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/target/native-image/liblcms.so" beforeDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -112,7 +87,7 @@
       <workItem from="1771754665080" duration="49000" />
       <workItem from="1771756164938" duration="110000" />
       <workItem from="1771756289601" duration="1820000" />
-      <workItem from="1771758934974" duration="3369000" />
+      <workItem from="1771758934974" duration="4778000" />
     </task>
     <servers />
   </component>

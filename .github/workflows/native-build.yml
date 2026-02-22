@@ -1,4 +1,4 @@
-name: Build Native + Release
+name: Build + Release
 
 on:
   workflow_dispatch:
@@ -21,58 +21,32 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Setup GraalVM
-        uses: graalvm/setup-graalvm@v1
+      - name: Setup JDK
+        uses: actions/setup-java@v4
         with:
-          distribution: graalvm-community
+          distribution: temurin
           java-version: '25'
 
-      - name: Build jar
-        run: mvn -B package
+      - name: Build with Maven (runs jpackage)
+        run: mvn -B clean package
 
-      - name: Build native image
-        run: |
-          native-image \
-            --no-fallback \
-            --add-modules=java.desktop \
-            --initialize-at-run-time=sun.awt.X11.XToolkit \
-            -Djava.awt.headless=false \
-            -jar target/*.jar \
-            iso_downloader
-
-      # ---------- macOS bundle ----------
-      - name: Create .app bundle (macOS)
-        if: runner.os == 'macOS'
-        run: |
-          mkdir -p IsoDownloader.app/Contents/MacOS
-          mkdir -p IsoDownloader.app/Contents
-
-          cp iso_downloader IsoDownloader.app/Contents/MacOS/
-
-          cat > IsoDownloader.app/Contents/Info.plist <<EOF
-          <?xml version="1.0" encoding="UTF-8"?>
-          <!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN"
-          "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
-          <plist version="1.0">
-          <dict>
-              <key>CFBundleName</key>
-              <string>Iso Downloader</string>
-              <key>CFBundleExecutable</key>
-              <string>iso_downloader</string>
-              <key>CFBundleIdentifier</key>
-              <string>dev.rishon.isodownloader</string>
-              <key>CFBundleVersion</key>
-              <string>${{ github.event.inputs.version }}</string>
-              <key>CFBundlePackageType</key>
-              <string>APPL</string>
-          </dict>
-          </plist>
-          EOF
-
-      - name: Rename Linux binary
+      # ---------- Linux wrapper ONLY ----------
+      - name: Create iso wrapper (Linux only)
         if: runner.os == 'Linux'
-        run: mv iso_downloader iso_downloader-linux
+        run: |
+          echo "./bin/T2ISO" > T2ISO/iso
+          chmod +x T2ISO/iso
 
+      # ---------- Zip ----------
+      - name: Zip Linux bundle
+        if: runner.os == 'Linux'
+        run: zip -r t2iso_linux.zip T2ISO
+
+      - name: Zip macOS bundle
+        if: runner.os == 'macOS'
+        run: zip -r t2iso_macos.zip T2ISO.app
+
+      # ---------- Tag once ----------
       - name: Create tag
         if: matrix.os == 'ubuntu-latest'
         run: |
@@ -81,11 +55,12 @@ jobs:
           git tag ${{ github.event.inputs.version }}
           git push origin ${{ github.event.inputs.version }}
 
+      # ---------- Release ----------
       - name: Release assets
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
           files: |
-            iso_downloader-linux
-            IsoDownloader.app
             target/*.jar
+            t2iso_linux.zip
+            t2iso_macos.zip
