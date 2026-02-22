@@ -17,6 +17,27 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
+      - name: Setup GraalVM
+        uses: graalvm/setup-graalvm@v1
+        with:
+          distribution: graalvm-community
+          java-version: '25'
+          components: native-image
+
+      - name: Build jar
+        run: mvn -B package
+
+      - name: Build native image
+        run: |
+          native-image \
+            --no-fallback \
+            --add-modules=java.desktop \
+            --initialize-at-build-time \
+            -Djava.awt.headless=false \
+            -H:+AddAllCharsets \
+            --enable-url-protocols=http,https \
+            -jar target/*.jar iso_downloader
+
       - name: Create tag
         run: |
           git config user.name "github-actions"
@@ -24,7 +45,8 @@ jobs:
           git tag ${{ github.event.inputs.version }}
           git push origin ${{ github.event.inputs.version }}
 
-      - name: Create release
+      - name: Create release and upload binary
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
+          files: iso_downloader

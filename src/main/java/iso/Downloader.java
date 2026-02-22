@@ -8,6 +8,13 @@ import java.net.HttpURLConnection;
 import java.net.URL;
 
 public class Downloader {
+    private boolean isCancelled = false;
+    public void setCancelled(boolean b){
+        isCancelled=b;
+    }
+    public boolean isCancelled(){
+        return isCancelled;
+    }
     public static void downloadFile(URL url, String outputFileName) throws IOException {
         try (InputStream in = url.openStream();
              FileOutputStream fos = new FileOutputStream(outputFileName)) {
@@ -20,7 +27,7 @@ public class Downloader {
             }
         }
     }
-    public static void downloadFileWithProgress(JProgressBar progressBar,
+    public void downloadFileWithProgress(JProgressBar progressBar,
                                                 JLabel label,
                                                 URL url,
                                                 String output) {
@@ -42,6 +49,9 @@ public class Downloader {
                 long totalRead = 0;
 
                 while ((bytesRead = in.read(buffer)) != -1) {
+                    if (isCancelled) {
+                        return;
+                    }
                     fos.write(buffer,0,bytesRead);
                     totalRead += bytesRead;
 

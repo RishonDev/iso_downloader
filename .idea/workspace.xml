@@ -4,8 +4,13 @@
     <option name="autoReloadType" value="SELECTIVE" />
   </component>
   <component name="ChangeListManager">
-    <list default="true" id="e31a08c5-a65b-4685-9078-48ffce7af569" name="Changes" comment="">
+    <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.github/workflows/native-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/native-build.yml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/inspectionProfiles/Project_Default.xml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/iso_downloader.iml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -15,57 +20,37 @@
   <component name="ComposerSettings">
     <execution />
   </component>
-  <component name="FileTemplateManagerImpl">
-    <option name="RECENT_TEMPLATES">
-      <list>
-        <option value="Class" />
-      </list>
-    </option>
-  </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
   </component>
-  <component name="GitHubPullRequestSearchHistory">{
-  &quot;lastFilter&quot;: {
-    &quot;state&quot;: &quot;OPEN&quot;,
-    &quot;assignee&quot;: &quot;RishonDev&quot;
+  <component name="GitHubPullRequestSearchHistory"><![CDATA[{
+  "lastFilter": {
+    "state": "OPEN",
+    "assignee": "RishonDev"
   }
-}</component>
-  <component name="GithubPullRequestsUISettings">{
-  &quot;selectedUrlAndAccountId&quot;: {
-    &quot;url&quot;: &quot;https://github.com/RishonDev/iso_downloader.git&quot;,
-    &quot;accountId&quot;: &quot;1deeb742-f491-4b2e-aca7-ed6cc3b9aa5f&quot;
+}]]></component>
+  <component name="GithubPullRequestsUISettings"><![CDATA[{
+  "selectedUrlAndAccountId": {
+    "url": "https://github.com/RishonDev/iso_downloader.git",
+    "accountId": "1deeb742-f491-4b2e-aca7-ed6cc3b9aa5f"
   }
-}</component>
-  <component name="McpProjectServerCommands">
-    <commands />
-    <urls />
-  </component>
-  <component name="ProblemsViewState">
-    <option name="selectedTabId" value="CurrentFile" />
-  </component>
-  <component name="ProjectColorInfo">{
-  &quot;associatedIndex&quot;: 0
-}</component>
-  <component name="ProjectId" id="39sfzbzW5CCZ2w3M01o78O0VD42" />
+}]]></component>
+  <component name="ProjectColorInfo"><![CDATA[{
+  "customColor": "",
+  "associatedIndex": 0
+}]]></component>
+  <component name="ProjectId" id="3A0OCnXM1bneatQzHdSX8TeOtMb" />
   <component name="ProjectViewState">
     <option name="hideEmptyMiddlePackages" value="true" />
     <option name="showLibraryContents" value="true" />
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
-    "Application.IsoUI.executor": "Run",
-    "Application.MDEngine.executor": "Run",
-    "Application.Main.executor": "Run",
-    "Application.RunCommand.executor": "Run",
     "Application.T2ISO.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
-    "RunOnceActivity.MCP Project settings loaded": "true",
     "RunOnceActivity.ShowReadmeOnStart": "true",
-    "RunOnceActivity.TerminalTabsStorage.copyFrom.TerminalArrangementManager.252": "true",
     "RunOnceActivity.git.unshallow": "true",
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
-    "SHARE_PROJECT_CONFIGURATION_FILES": "true",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
     "node.js.detected.package.eslint": "true",
@@ -73,54 +58,28 @@
     "node.js.selected.package.eslint": "(autodetect)",
     "node.js.selected.package.tslint": "(autodetect)",
     "nodejs_package_manager_path": "npm",
-    "project.structure.last.edited": "Project",
-    "project.structure.proportion": "0.0",
-    "project.structure.side.proportion": "0.0",
-    "run.code.analysis.last.selected.profile": "pProject Default",
-    "settings.editor.selected.configurable": "inlay.hints",
     "vue.rearranger.settings.migration": "true"
   }
 }]]></component>
-  <component name="RunAnythingCache">
-    <myKeys>
-      <visibility group="Gradle Tasks" flag="true" />
-      <visibility group="HTTP Requests" flag="true" />
-      <visibility group="Maven Goals" flag="true" />
-      <visibility group="Recent projects" flag="true" />
-      <visibility group="Run Configurations" flag="true" />
-    </myKeys>
+  <component name="SharedIndexes">
+    <attachedChunks>
+      <set>
+        <option value="bundled-jdk-30f59d01ecdd-2fc7cc6b9a17-intellij.indexing.shared.core-IU-253.31033.145" />
+      </set>
+    </attachedChunks>
   </component>
   <component name="TaskManager">
     <task active="true" id="Default" summary="Default task">
-      <changelist id="e31a08c5-a65b-4685-9078-48ffce7af569" name="Changes" comment="" />
-      <created>1771489965312</created>
+      <changelist id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="" />
+      <created>1771725898267</created>
       <option name="number" value="Default" />
       <option name="presentableId" value="Default" />
-      <updated>1771489965312</updated>
-      <workItem from="1771503835676" duration="11000" />
-      <workItem from="1771503858897" duration="159000" />
-      <workItem from="1771504033337" duration="16380000" />
-      <workItem from="1771520959792" duration="828000" />
-      <workItem from="1771578396977" duration="8347000" />
-      <workItem from="1771592911284" duration="54000" />
-      <workItem from="1771592994016" duration="1383000" />
-      <workItem from="1771600597786" duration="7928000" />
-      <workItem from="1771684930822" duration="6085000" />
+      <updated>1771725898267</updated>
+      <workItem from="1771725910481" duration="6112000" />
     </task>
     <servers />
   </component>
   <component name="TypeScriptGeneratedFilesManager">
     <option name="version" value="3" />
-  </component>
-  <component name="Vcs.Log.Tabs.Properties">
-    <option name="TAB_STATES">
-      <map>
-        <entry key="MAIN">
-          <value>
-            <State />
-          </value>
-        </entry>
-      </map>
-    </option>
   </component>
 </project>

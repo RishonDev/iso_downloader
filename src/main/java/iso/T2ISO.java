@@ -8,8 +8,9 @@ import java.util.ArrayList;
 import java.util.Objects;
 
 public class T2ISO {
+    final Downloader downloader = new Downloader();
     final String home = System.getProperty("user.home");
-
+    String output;
     final JFrame frame = new JFrame("T2 Linux ISO Downloader");
     final JPanel panel = new JPanel(new GridBagLayout());
 
@@ -17,6 +18,8 @@ public class T2ISO {
     final JLabel statusLabel = new JLabel("Ready");
     final JLabel partLabel = new JLabel("Waiting to start...");
     final JButton downloadButton = new JButton("Download ISO");
+    final JButton cancelButton = new JButton("Cancel Download");
+    static boolean cancelReq = false;
 
     final JLabel flavourLabel = new JLabel("Flavour:");
     final JComboBox<String> flavourBox = new JComboBox<>();
@@ -32,7 +35,16 @@ public class T2ISO {
         SwingUtilities.invokeLater(() ->
                 JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE));
     }
-
+    void showWarning(String message) {
+        SwingUtilities.invokeLater(() ->
+                JOptionPane.showMessageDialog(
+                        frame,
+                        message,
+                        "Warning",
+                        JOptionPane.WARNING_MESSAGE
+                )
+        );
+    }
     void start() {
         try {
             engine.readMetadata();
@@ -67,6 +79,42 @@ public class T2ISO {
                 flavourBox.addItem(parts[0].trim());
             }
         }
+        cancelButton.addActionListener(e -> {
+            int confirmCancel = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Cancel current download?",
+                    "Cancel Download",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (confirmCancel != JOptionPane.YES_OPTION)
+                return;
+            else{
+                downloader.setCancelled(true);
+                showWarning("Download is cancelled");
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            }
+
+
+            int deleteChoice = JOptionPane.showConfirmDialog(
+                    frame,
+                    "Delete partial file?",
+                    "Delete Partial Download",
+                    JOptionPane.YES_NO_OPTION
+            );
+
+            if (deleteChoice == JOptionPane.YES_OPTION && output != null) {
+                var n = new java.io.File(output).delete();
+            }
+
+            SwingUtilities.invokeLater(() -> {
+                progressBar.setValue(0);
+                statusLabel.setText("Download cancelled");
+                partLabel.setText("Idle");
+                downloadButton.setVisible(true);
+                cancelButton.setVisible(false);
+            });
+        });
 
         flavourBox.addActionListener(_ -> {
             String selected = (String) flavourBox.getSelectedItem();
@@ -90,6 +138,9 @@ public class T2ISO {
         flavourBox.setSelectedIndex(0);
 
         downloadButton.addActionListener(_ -> new Thread(() -> {
+            downloader.setCancelled(false);
+            downloadButton.setVisible(false);
+            cancelButton.setVisible(true);
             try {
                 download(items,
                         Objects.requireNonNull(flavourBox.getSelectedItem()).toString(),
@@ -124,6 +175,7 @@ public class T2ISO {
         panel.add(statusLabel, gbc);
         gbc.gridy = 5;
         panel.add(downloadButton, gbc);
+        panel.add(cancelButton, gbc);
 
         frame.add(panel);
         frame.setVisible(true);
@@ -154,7 +206,7 @@ public class T2ISO {
     void download(ArrayList<String> meta, String edition, String version) throws Exception {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         String iso = (edition + "-T2-" + version).replace(" ", "").replace(".", "") + ".iso";
-        String output = home + "/Downloads/" + iso;
+        output = home + "/Downloads/" + iso;
 
         for (String i : meta) {
             String[] data = i.split(",");
@@ -169,7 +221,7 @@ public class T2ISO {
                 SwingUtilities.invokeLater(() ->
                         partLabel.setText("Downloading part " + partNum + " of " + totalParts));
 
-                Downloader.downloadFileWithProgress(progressBar, statusLabel,
+                downloader.downloadFileWithProgress(progressBar, statusLabel,
                         new java.net.URI(data[3 + p]).toURL(), output);
             }
         }
@@ -180,17 +232,18 @@ public class T2ISO {
             partLabel.setText("Download complete");
         });
 
-        revealFile(output);
-
-        try {
-            String checksum = sha256(output);
-            JOptionPane.showMessageDialog(frame,
-                    "SHA256:\n" + checksum,
-                    "Integrity Check",
-                    JOptionPane.INFORMATION_MESSAGE);
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        } catch (Exception e) {
-            showError("Checksum failed");
+        if(!downloader.isCancelled()) {
+            revealFile(output);
+            try {
+                String checksum = sha256(output);
+                JOptionPane.showMessageDialog(frame,
+                        "SHA256:\n" + checksum,
+                        "Integrity Check",
+                        JOptionPane.INFORMATION_MESSAGE);
+                frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            } catch (Exception e) {
+                showError("Checksum failed");
+            }
         }
     }
 
