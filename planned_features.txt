@@ -1,3 +1,4 @@
 Loading screen
 Flashing to ISO
 Theme
+Verify sha256
