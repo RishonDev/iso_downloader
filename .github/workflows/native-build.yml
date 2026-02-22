@@ -36,7 +36,8 @@ jobs:
             -Djava.awt.headless=false \
             -H:+AddAllCharsets \
             --enable-url-protocols=http,https \
-            -jar target/*.jar iso_downloader
+            -jar target/*.jar iso_downloader \
+            --initialize-at-run-time=sun.awt.X11.XToolkit
 
       - name: Create tag
         run: |
