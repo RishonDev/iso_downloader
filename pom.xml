@@ -50,25 +50,28 @@
                         <phase>package</phase>
                         <configuration>
                             <target>
-                                <exec executable="jpackage">
-                                    <arg value="--type"/>
-                                    <arg value="app-image"/>
+                               <exec executable="jpackage">
+                                  <arg value="--type"/>
+                                  <arg value="app-image"/>
 
-                                    <arg value="--name"/>
-                                    <arg value="T2ISO"/>
+                                  <arg value="--name"/>
+                                  <arg value="T2ISO"/>
 
-                                    <arg value="--input"/>
-                                    <arg value="${project.build.directory}"/>
+                                  <arg value="--input"/>
+                                  <arg value="${project.build.directory}"/>
 
-                                    <arg value="--main-jar"/>
-                                    <arg value="${project.build.finalName}-jar-with-dependencies.jar"/>
+                                  <arg value="--main-jar"/>
+                                  <arg value="${project.build.finalName}-jar-with-dependencies.jar"/>
 
-                                    <arg value="--main-class"/>
-                                    <arg value="iso.T2ISO"/>
+                                  <arg value="--main-class"/>
+                                  <arg value="iso.T2ISO"/>
 
-                                    <arg value="--java-options"/>
-                                    <arg value="-Djava.awt.headless=false"/>
-                                </exec>
+                                  <arg value="--java-options"/>
+                                  <arg value="-Djava.awt.headless=false"/>
+
+                                  <arg value="--icon"/>
+                                  <arg value="${jpackage.icon}"/>
+                              </exec> 
                             </target>
                         </configuration>
                         <goals>
