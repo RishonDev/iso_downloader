@@ -10,7 +10,7 @@ on:
 jobs:
   build:
     runs-on: ubuntu-latest
-
+      target/*.jar
     permissions:
       contents: write
 
@@ -50,4 +50,6 @@ jobs:
         uses: softprops/action-gh-release@v2
         with:
           tag_name: ${{ github.event.inputs.version }}
-          files: iso_downloader
+          files: |
+            iso_downloader
+            target/*.jar
