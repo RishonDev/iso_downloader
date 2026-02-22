@@ -79,5 +79,19 @@
             </plugin>
 
         </plugins>
-    </build>
+  </build>
+    <profiles>
+      <profile>
+        <id>mac</id>
+        <activation>
+          <os>
+            <family>mac</family>
+          </os>
+        </activation>
+
+        <properties>
+          <jpackage.icon>${project.basedir}/packaging/macos/icon.icns</jpackage.icon>
+        </properties>
+      </profile>
+    </profiles>
 </project>
