@@ -1,0 +1,5 @@
+<?xml version="1.0" ?>
+<jpackage-state version="25.0.1" platform="linux">
+  <app-version>1.0</app-version>
+  <main-launcher>T2ISO</main-launcher>
+  <main-class>iso.T2ISO</main-class></jpackage-state>

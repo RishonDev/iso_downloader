@@ -1,44 +1,83 @@
 <project>
-  <modelVersion>4.0.0</modelVersion>
-  <groupId>mygroupid</groupId>
-  <artifactId>iso</artifactId>
-  <version>0.2-beta</version>
-  <dependencies>
-      <dependency>
-          <groupId>com.formdev</groupId>
-          <artifactId>flatlaf-extras</artifactId>
-          <version>3.7</version>
-      </dependency>
-      <dependency>
-          <groupId>com.formdev</groupId>
-          <artifactId>flatlaf</artifactId>
-          <version>3.7</version>
-      </dependency>
-  </dependencies>
+    <modelVersion>4.0.0</modelVersion>
+    <groupId>t2linux</groupId> <artifactId>iso</artifactId> <version>0.2-beta</version>
+    <properties>
+        <maven.compiler.release>21</maven.compiler.release>
+    </properties>
     <build>
         <plugins>
+
+            <!-- Compile -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
+                <version>3.13.0</version>
                 <configuration>
-                    <source>25</source>
-                    <target>25</target>
-                    <compilerArgs>--enable-preview</compilerArgs>
+                    <release>25</release>
                 </configuration>
             </plugin>
+
+            <!-- Fat JAR -->
             <plugin>
-                <groupId>org.apache.maven.plugins</groupId>
-                <artifactId>maven-jar-plugin</artifactId>
-                <version>3.3.0</version>
-                <configuration>
-                    <archive>
-                        <manifest>
-                            <mainClass>iso.T2ISO</mainClass>
-                        </manifest>
-                    </archive>
-                </configuration>
+                <artifactId>maven-assembly-plugin</artifactId>
+                <version>3.7.1</version>
+                <executions>
+                    <execution>
+                        <phase>package</phase>
+                        <goals>
+                            <goal>single</goal>
+                        </goals>
+                        <configuration>
+                            <archive>
+                                <manifest>
+                                    <mainClass>iso.T2ISO</mainClass>
+                                </manifest>
+                            </archive>
+                            <descriptorRefs>
+                                <descriptorRef>jar-with-dependencies</descriptorRef>
+                            </descriptorRefs>
+                        </configuration>
+                    </execution>
+                </executions>
             </plugin>
+
+            <!-- jpackage -->
+            <plugin>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>jpackage</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <target>
+                                <exec executable="jpackage">
+                                    <arg value="--type"/>
+                                    <arg value="app-image"/>
+
+                                    <arg value="--name"/>
+                                    <arg value="T2ISO"/>
+
+                                    <arg value="--input"/>
+                                    <arg value="${project.build.directory}"/>
+
+                                    <arg value="--main-jar"/>
+                                    <arg value="${project.build.finalName}-jar-with-dependencies.jar"/>
+
+                                    <arg value="--main-class"/>
+                                    <arg value="iso.T2ISO"/>
+
+                                    <arg value="--java-options"/>
+                                    <arg value="-Djava.awt.headless=false"/>
+                                </exec>
+                            </target>
+                        </configuration>
+                        <goals>
+                            <goal>run</goal>
+                        </goals>
+                    </execution>
+                </executions>
+            </plugin>
+
         </plugins>
     </build>
 </project>
-
