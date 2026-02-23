@@ -1,100 +1,174 @@
 <project>
     <modelVersion>4.0.0</modelVersion>
-    <groupId>t2linux</groupId> <artifactId>iso</artifactId> <version>0.2-beta</version>
+    <groupId>t2linux</groupId>
+    <artifactId>iso</artifactId>
+    <version>0.2-beta</version>
+
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
+        <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
+        <main.class>iso.T2ISO</main.class>
+        <app.name>T2ISO</app.name>
     </properties>
+
     <build>
         <plugins>
 
-            <!-- Compile -->
+            <!-- Compiler -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-compiler-plugin</artifactId>
                 <version>3.13.0</version>
                 <configuration>
-                    <release>25</release>
+                    <release>${maven.compiler.release}</release>
                 </configuration>
             </plugin>
 
             <!-- Fat JAR -->
             <plugin>
-                <artifactId>maven-assembly-plugin</artifactId>
-                <version>3.7.1</version>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-shade-plugin</artifactId>
+                <version>3.5.0</version>
                 <executions>
                     <execution>
                         <phase>package</phase>
-                        <goals>
-                            <goal>single</goal>
-                        </goals>
+                        <goals><goal>shade</goal></goals>
                         <configuration>
-                            <archive>
-                                <manifest>
-                                    <mainClass>iso.T2ISO</mainClass>
-                                </manifest>
-                            </archive>
-                            <descriptorRefs>
-                                <descriptorRef>jar-with-dependencies</descriptorRef>
-                            </descriptorRefs>
+                            <createDependencyReducedPom>false</createDependencyReducedPom>
+                            <transformers>
+                                <transformer implementation="org.apache.maven.plugins.shade.resource.ManifestResourceTransformer">
+                                    <mainClass>${main.class}</mainClass>
+                                </transformer>
+                            </transformers>
                         </configuration>
                     </execution>
                 </executions>
             </plugin>
 
-            <!-- jpackage -->
+            <!-- jlink + jpackage -->
             <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
                 <artifactId>maven-antrun-plugin</artifactId>
                 <version>3.1.0</version>
                 <executions>
+
                     <execution>
-                        <id>jpackage</id>
+                        <id>runtime-and-package</id>
                         <phase>package</phase>
                         <configuration>
                             <target>
-                               <exec executable="jpackage">
-                                  <arg value="--type"/>
-                                  <arg value="app-image"/>
 
-                                  <arg value="--name"/>
-                                  <arg value="T2ISO"/>
+                                <delete dir="runtime" quiet="true"/>
+                                <delete dir="${app.name}" quiet="true"/>
+                                <delete dir="AppDir" quiet="true"/>
+                                <!-- Build minimal runtime -->
+<!--                                <exec executable="jlink" failonerror="true">-->
+<!--                                    <arg value="&#45;&#45;add-modules"/>-->
+<!--                                    <arg value="java.base,java.desktop,java.logging,java.net.http,java.naming,java.security.sasl"/>-->
 
-                                  <arg value="--input"/>
-                                  <arg value="${project.build.directory}"/>
+<!--                                    <arg value="&#45;&#45;strip-debug"/>-->
+<!--                                    <arg value="&#45;&#45;no-header-files"/>-->
+<!--                                    <arg value="&#45;&#45;no-man-pages"/>-->
+<!--                                    <arg value="&#45;&#45;compress=2"/>-->
 
-                                  <arg value="--main-jar"/>
-                                  <arg value="${project.build.finalName}-jar-with-dependencies.jar"/>
+<!--                                    <arg value="&#45;&#45;output"/>-->
+<!--                                    <arg value="runtime"/>-->
+<!--                                </exec>-->
 
-                                  <arg value="--main-class"/>
-                                  <arg value="iso.T2ISO"/>
+                                <!-- Package app -->
+                                <exec executable="jpackage" failonerror="true">
 
-                                  <arg value="--java-options"/>
-                                  <arg value="-Djava.awt.headless=false"/>
+                                    <arg value="--type"/>
+                                    <arg value="app-image"/>
 
-                                  <arg value="--icon"/>
-                                  <arg value="${jpackage.icon}"/>
-                              </exec> 
+                                    <arg value="--name"/>
+                                    <arg value="${app.name}"/>
+
+                                    <arg value="--input"/>
+                                    <arg value="${project.build.directory}"/>
+
+                                    <arg value="--main-jar"/>
+                                    <arg value="${project.build.finalName}.jar"/>
+
+                                    <arg value="--main-class"/>
+                                    <arg value="${main.class}"/>
+
+                                    <arg value="--runtime-image"/>
+                                    <arg value="runtime-min"/>
+
+                                    <arg value="--icon"/>
+                                    <arg value="${project.basedir}/packaging/linux/icon.png"/>
+
+                                </exec>
+
                             </target>
                         </configuration>
-                        <goals>
-                            <goal>run</goal>
-                        </goals>
+                        <goals><goal>run</goal></goals>
                     </execution>
+
                 </executions>
             </plugin>
 
         </plugins>
-  </build>
-    <profiles>
-      <profile>
-        <id>mac</id>
-        <activation>
-          <os>
-            <family>mac</family>
-          </os>
-        </activation>
+    </build>
 
-        <properties>
-          <jpackage.icon>${project.basedir}/packaging/macos/icon.icns</jpackage.icon>
-        </properties>
-      </profile>
+    <!-- Linux AppImage profile -->
+    <profiles>
+        <profile>
+            <id>linux</id>
+            <activation>
+                <os><family>unix</family></os>
+            </activation>
+
+            <build>
+                <plugins>
+
+                    <plugin>
+                        <groupId>org.apache.maven.plugins</groupId>
+                        <artifactId>maven-antrun-plugin</artifactId>
+                        <version>3.1.0</version>
+                        <executions>
+
+                            <execution>
+                                <id>appimage</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+
+                                        <mkdir dir="AppDir"/>
+                                        <copy todir="AppDir">
+                                            <fileset dir="${app.name}"/>
+                                        </copy>
+
+                                        <echo file="AppDir/AppRun"><![CDATA[
+#!/bin/sh
+HERE="$(dirname "$(readlink -f "$0")")"
+exec "$HERE/bin/${app.name}" "$@"
+                                        ]]></echo>
+
+                                        <chmod file="AppDir/AppRun" perm="755"/>
+                                        <chmod file="AppDir/bin/T2ISO" perm="755"/>
+                                        <copy todir="AppDir">
+                                            <fileset dir="${project.basedir}/packaging/linux"/>
+                                        </copy>
+
+                                        <exec executable="appimagetool" failonerror="true">
+                                            <env key="ARCH" value="x86_64"/>
+                                            <arg value="AppDir"/>
+                                        </exec>
+
+                                    </target>
+                                </configuration>
+                                <goals><goal>run</goal></goals>
+                            </execution>
+
+                        </executions>
+                    </plugin>
+
+                </plugins>
+            </build>
+
+        </profile>
     </profiles>
+
 </project>

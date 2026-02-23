@@ -28,7 +28,6 @@ public class MDEngine {
         File dir = new File(home + "/.iso/");
         boolean b = dir.mkdirs();
         File jsonFile = new File(dir, "distro-metadata.json");
-
         Downloader.downloadFile(metadata, jsonFile.getAbsolutePath());
 
         try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {

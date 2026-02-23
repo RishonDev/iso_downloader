@@ -50,7 +50,7 @@ public class Downloader {
 
                 while ((bytesRead = in.read(buffer)) != -1) {
                     if (isCancelled) {
-                        return;
+                        break;
                     }
                     fos.write(buffer,0,bytesRead);
                     totalRead += bytesRead;

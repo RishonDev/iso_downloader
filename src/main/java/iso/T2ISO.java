@@ -116,7 +116,7 @@ public class T2ISO {
             });
         });
 
-        flavourBox.addActionListener(_ -> {
+        flavourBox.addActionListener(e -> {
             String selected = (String) flavourBox.getSelectedItem();
             versionBox.removeAllItems();
 
@@ -137,7 +137,7 @@ public class T2ISO {
 
         flavourBox.setSelectedIndex(0);
 
-        downloadButton.addActionListener(_ -> new Thread(() -> {
+        downloadButton.addActionListener(e -> new Thread(() -> {
             downloader.setCancelled(false);
             downloadButton.setVisible(false);
             cancelButton.setVisible(true);
@@ -247,7 +247,7 @@ public class T2ISO {
         }
     }
 
-    static void main(String[] args) {
+    public static void main(String[] args) {
 
         SwingUtilities.invokeLater(new Runnable() {
             @Override
