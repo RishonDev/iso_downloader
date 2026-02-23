@@ -5,22 +5,7 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
-      <change afterPath="$PROJECT_DIR$/src/main/java/iso/Settings.java" afterDir="false" />
-      <change afterPath="$PROJECT_DIR$/src/main/java/iso/USB.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/planned_features.txt" beforeDir="false" afterPath="$PROJECT_DIR$/planned_features.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runtime-min/bin/java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/runtime-min/bin/keytool" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/runtime-min/lib/modules" beforeDir="false" afterPath="$PROJECT_DIR$/runtime-min/lib/modules" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/runtime-min/release" beforeDir="false" afterPath="$PROJECT_DIR$/runtime-min/release" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/FileIO.java" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/MDEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/MDEngine.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Command.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/CommandList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/CommandList.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Script.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Script.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -140,7 +125,7 @@
       <workItem from="1771821842936" duration="356000" />
       <workItem from="1771822240910" duration="151000" />
       <workItem from="1771822414063" duration="140000" />
-      <workItem from="1771822568749" duration="45418000" />
+      <workItem from="1771822568749" duration="47294000" />
     </task>
     <servers />
   </component>
