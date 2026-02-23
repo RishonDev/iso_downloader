@@ -5,8 +5,10 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.github/workflows/native-build.yml" beforeDir="false" afterPath="$PROJECT_DIR$/.github/workflows/native-build.yml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/docs/screenshot.png" beforeDir="false" afterPath="$PROJECT_DIR$/docs/screenshot.png" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -126,7 +128,7 @@
       <workItem from="1771821842936" duration="356000" />
       <workItem from="1771822240910" duration="151000" />
       <workItem from="1771822414063" duration="140000" />
-      <workItem from="1771822568749" duration="49517000" />
+      <workItem from="1771822568749" duration="50233000" />
     </task>
     <servers />
   </component>

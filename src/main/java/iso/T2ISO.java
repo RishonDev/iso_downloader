@@ -1,18 +1,42 @@
 package iso;
 
-import javax.swing.*;
-import java.awt.*;
+import javax.swing.BorderFactory;
+import javax.swing.JButton;
+import javax.swing.JCheckBox;
+import javax.swing.JComboBox;
+import javax.swing.JFileChooser;
+import javax.swing.JFrame;
+import javax.swing.JLabel;
+import javax.swing.JMenu;
+import javax.swing.JMenuBar;
+import javax.swing.JMenuItem;
+import javax.swing.JOptionPane;
+import javax.swing.JPanel;
+import javax.swing.JProgressBar;
+import javax.swing.JTextField;
+import javax.swing.SwingConstants;
+import javax.swing.SwingUtilities;
+import javax.swing.UIManager;
+import javax.swing.UnsupportedLookAndFeelException;
+import java.awt.Desktop;
+import java.awt.GridBagConstraints;
+import java.awt.GridBagLayout;
+import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashSet;
+import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Map;
 import java.util.Objects;
 import java.util.Set;
 
 public class T2ISO {
+    private static final int HASH_BUFFER_SIZE = 64 * 1024;
+
     private final Downloader downloader = new Downloader();
     private final String home = System.getProperty("user.home");
     private String output;
@@ -38,6 +62,7 @@ public class T2ISO {
     private final JComboBox<String> versionBox = new JComboBox<>();
 
     private final MDEngine engine = new MDEngine();
+    private final Map<String, List<String[]>> itemsByFlavour = new LinkedHashMap<>();
 
     private void showError(String message) {
         SwingUtilities.invokeLater(() ->
@@ -71,14 +96,26 @@ public class T2ISO {
         return items;
     }
 
-    private boolean populateFlavours(List<String> items) {
-        Set<String> seen = new HashSet<>();
+    private void indexItemsByFlavour(List<String> items) {
+        itemsByFlavour.clear();
         for (String line : items) {
             String[] parts = line.split(",");
             if (parts.length < 2) {
                 continue;
             }
-            String flavour = parts[0].trim();
+            parts[0] = parts[0].trim();
+            parts[1] = parts[1].trim();
+            if (parts.length > 2) {
+                parts[2] = parts[2].trim();
+            }
+            itemsByFlavour.computeIfAbsent(parts[0], key -> new ArrayList<>()).add(parts);
+        }
+    }
+
+    private boolean populateFlavours() {
+        flavourBox.removeAllItems();
+        Set<String> seen = new HashSet<>();
+        for (String flavour : itemsByFlavour.keySet()) {
             if (seen.add(flavour)) {
                 flavourBox.addItem(flavour);
             }
@@ -86,18 +123,18 @@ public class T2ISO {
         return flavourBox.getItemCount() > 0;
     }
 
-    private JMenuBar createMenuBar(List<String> items) {
+    private JMenuBar createMenuBar() {
         JMenuBar menuBar = new JMenuBar();
         JMenu fileMenu = new JMenu("File");
         JMenuItem resumeItem = new JMenuItem("Resume Download");
-        resumeItem.addActionListener(e -> startDownload(items));
+        resumeItem.addActionListener(e -> startDownload());
 
         fileMenu.add(resumeItem);
         menuBar.add(fileMenu);
         return menuBar;
     }
 
-    private void configureActions(List<String> items) {
+    private void configureActions() {
         flashCheck.setSelected(false);
         deviceField.setEnabled(true);
         flashCheck.addActionListener(e -> {
@@ -149,11 +186,8 @@ public class T2ISO {
             }
 
             versionBox.removeAllItems();
-            for (String line : items) {
-                String[] parts = line.split(",");
-                if (parts.length < 2 || !parts[0].equals(selected)) {
-                    continue;
-                }
+            List<String[]> flavourItems = itemsByFlavour.getOrDefault(selected, List.of());
+            for (String[] parts : flavourItems) {
 
                 String version;
                 if (parts.length > 2 && !parts[2].startsWith("http")) {
@@ -203,7 +237,7 @@ public class T2ISO {
                     return;
                 }
             }
-            startDownload(items);
+            startDownload();
         });
     }
 
@@ -227,7 +261,7 @@ public class T2ISO {
         }
     }
 
-    private void startDownload(List<String> items) {
+    private void startDownload() {
         new Thread(() -> {
             downloader.setCancelled(false);
 
@@ -242,7 +276,7 @@ public class T2ISO {
             });
 
             try {
-                download(new ArrayList<>(items), selectedFlavour, selectedVersion);
+                download(itemsByFlavour.getOrDefault(selectedFlavour, List.of()), selectedFlavour, selectedVersion);
             } catch (Exception ex) {
                 showError(ex.getMessage());
                 SwingUtilities.invokeLater(() -> {
@@ -317,14 +351,15 @@ public class T2ISO {
         if (items.isEmpty()) {
             return;
         }
-        if (!populateFlavours(items)) {
+        indexItemsByFlavour(items);
+        if (!populateFlavours()) {
             showError("No valid ISO metadata was found.");
             return;
         }
 
-        configureActions(items);
+        configureActions();
         buildLayout();
-        configureFrame(createMenuBar(items));
+        configureFrame(createMenuBar());
     }
 
     private String buildOutputPath(String edition, String version) {
@@ -343,7 +378,7 @@ public class T2ISO {
     String sha256(String file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (var fis = new java.io.FileInputStream(file)) {
-            byte[] buffer = new byte[8192];
+            byte[] buffer = new byte[HASH_BUFFER_SIZE];
             int n;
             while ((n = fis.read(buffer)) != -1) {
                 digest.update(buffer, 0, n);
@@ -356,13 +391,12 @@ public class T2ISO {
         return hex.toString();
     }
 
-    void download(ArrayList<String> meta, String edition, String version) throws Exception {
+    void download(List<String[]> meta, String edition, String version) throws Exception {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         output = buildOutputPath(edition, version);
         boolean downloadedAtLeastOnePart = false;
 
-        for (String i : meta) {
-            String[] data = i.split(",");
+        for (String[] data : meta) {
             if (data.length < 4) {
                 continue;
             }

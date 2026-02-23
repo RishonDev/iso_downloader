@@ -1,6 +1,8 @@
 package iso;
 
-import javax.swing.*;
+import javax.swing.JLabel;
+import javax.swing.JProgressBar;
+import javax.swing.SwingUtilities;
 import java.io.BufferedReader;
 import java.io.InputStreamReader;
 

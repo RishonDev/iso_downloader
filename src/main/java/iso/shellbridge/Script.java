@@ -1,6 +1,9 @@
 package iso.shellbridge;
 
-import java.io.*;
+import java.io.BufferedReader;
+import java.io.File;
+import java.io.FileReader;
+import java.io.IOException;
 
 /***
  * A special wrapper for the command class to run scripts on *nix based systems.
