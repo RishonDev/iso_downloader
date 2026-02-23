@@ -9,6 +9,8 @@
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
         <main.class>iso.T2ISO</main.class>
         <app.name>T2ISO</app.name>
+        <runtime.modules>java.base,java.desktop,jdk.crypto.ec</runtime.modules>
+        <flatlaf.version>3.7</flatlaf.version>
     </properties>
 
     <build>
@@ -22,6 +24,11 @@
                 <configuration>
                     <release>${maven.compiler.release}</release>
                 </configuration>
+            </plugin>
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-surefire-plugin</artifactId>
+                <version>3.2.5</version>
             </plugin>
 
             <!-- Fat JAR -->
@@ -59,21 +66,23 @@
                             <target>
 
                                 <delete dir="runtime" quiet="true"/>
+                                <delete dir="runtime-min" quiet="true"/>
                                 <delete dir="${app.name}" quiet="true"/>
                                 <delete dir="AppDir" quiet="true"/>
                                 <!-- Build minimal runtime -->
-<!--                                <exec executable="jlink" failonerror="true">-->
-<!--                                    <arg value="&#45;&#45;add-modules"/>-->
-<!--                                    <arg value="java.base,java.desktop,java.logging,java.net.http,java.naming,java.security.sasl"/>-->
+                                <exec executable="jlink" failonerror="true">
+                                    <arg value="--add-modules"/>
+                                    <arg value="${runtime.modules}"/>
 
-<!--                                    <arg value="&#45;&#45;strip-debug"/>-->
-<!--                                    <arg value="&#45;&#45;no-header-files"/>-->
-<!--                                    <arg value="&#45;&#45;no-man-pages"/>-->
-<!--                                    <arg value="&#45;&#45;compress=2"/>-->
+                                    <arg value="--strip-debug"/>
+                                    <arg value="--strip-native-commands"/>
+                                    <arg value="--no-header-files"/>
+                                    <arg value="--no-man-pages"/>
+                                    <arg value="--compress=2"/>
 
-<!--                                    <arg value="&#45;&#45;output"/>-->
-<!--                                    <arg value="runtime"/>-->
-<!--                                </exec>-->
+                                    <arg value="--output"/>
+                                    <arg value="runtime-min"/>
+                                </exec>
 
                                 <!-- Package app -->
                                 <exec executable="jpackage" failonerror="true">
@@ -111,6 +120,20 @@
 
         </plugins>
     </build>
+
+    <dependencies>
+        <dependency>
+            <groupId>com.formdev</groupId>
+            <artifactId>flatlaf</artifactId>
+            <version>${flatlaf.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.junit.jupiter</groupId>
+            <artifactId>junit-jupiter</artifactId>
+            <version>5.10.2</version>
+            <scope>test</scope>
+        </dependency>
+    </dependencies>
 
     <!-- Linux AppImage profile -->
     <profiles>

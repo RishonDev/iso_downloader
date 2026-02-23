@@ -5,254 +5,22 @@
   </component>
   <component name="ChangeListManager">
     <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
-      <change beforePath="$PROJECT_DIR$/.idea/iso_downloader.iml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/material_theme_project_new.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/misc.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/misc.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/.idea/modules.xml" beforeDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/iso/Settings.java" afterDir="false" />
+      <change afterPath="$PROJECT_DIR$/src/main/java/iso/USB.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/bin/T2ISO" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/iso" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/T2ISO.png" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/.jpackage.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/T2ISO.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/antrun/build-main.xml" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/Downloader.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/FileIO.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/MDEngine.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/T2ISO$1.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/T2ISO.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/shellbridge/Command.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/shellbridge/CommandList.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/classes/iso/shellbridge/Script.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/iso-0.2-beta-jar-with-dependencies.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/iso-0.2-beta.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/maven-archiver/pom.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/app/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/libapplauncher.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/jaxp-strict.properties.template" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/jaxp.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/logging.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/management/jmxremote.access" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/management/jmxremote.password.template" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/management/management.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/net.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/sdp/sdp.conf.template" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/java.security" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/policy/README.txt" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/policy/limited/default_US_export.policy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/policy/limited/default_local.policy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/policy/limited/exempt_local.policy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/policy/unlimited/default_US_export.policy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/security/policy/unlimited/default_local.policy" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/conf/sound.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/aes.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/c-libutl.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/cldr.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/icu.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/public_suffix.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/siphash.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.base/unicode.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.compiler/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.compiler/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.datatransfer/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.datatransfer/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/colorimaging.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/giflib.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/harfbuzz.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/jpeg.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/lcms.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/libpng.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/mesa3d.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/pipewire.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.desktop/xwd.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.instrument/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.instrument/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.logging/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.logging/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.management.rmi/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.management.rmi/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.management/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.management/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.naming/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.naming/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.net.http/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.net.http/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.prefs/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.prefs/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.rmi/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.rmi/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.scripting/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.scripting/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.security.jgss/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.security.jgss/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.security.sasl/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.security.sasl/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.smartcardio/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.smartcardio/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.smartcardio/pcsclite.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.sql.rowset/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.sql.rowset/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.sql/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.sql/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.transaction.xa/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.transaction.xa/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml.crypto/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml.crypto/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml.crypto/santuario.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/bcel.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/dom.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/jcup.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/schema10part1.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/schema10part2.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xalan.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xerces.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xhtml10.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xhtml10schema.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xhtml11.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xhtml11schema.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xmlspec.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/java.xml/xmlxsd.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.accessibility/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.accessibility/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.attach/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.attach/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.compiler/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.compiler/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.dynalink/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.dynalink/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.dynalink/dynalink.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.httpserver/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.httpserver/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.incubator.vector/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.incubator.vector/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.incubator.vector/sleef.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.ed/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.ed/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.jvmstat/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.jvmstat/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.le/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.le/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.le/jline.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.md/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.md/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.md/commonmark.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.opt/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.opt/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.opt/jopt-simple.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.vm.ci/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.internal.vm.ci/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jartool/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jartool/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.javadoc/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.javadoc/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.javadoc/dejavufonts.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.javadoc/highlightjs.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.javadoc/jquery.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.javadoc/jqueryUI.md" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jconsole/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jconsole/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jdi/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jdi/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jdwp.agent/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jdwp.agent/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jfr/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jfr/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jshell/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jshell/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jsobject/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.jsobject/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.management.agent/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.management.agent/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.management.jfr/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.management.jfr/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.management/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.management/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.net/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.net/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.nio.mapmode/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.nio.mapmode/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.sctp/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.sctp/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.security.auth/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.security.auth/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.security.jgss/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.security.jgss/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.unsupported.desktop/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.unsupported.desktop/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.unsupported/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.unsupported/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.xml.dom/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.xml.dom/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.zipfs/COPYRIGHT" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/legal/jdk.zipfs/LICENSE" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/classlist" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/ct.sym" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/jexec" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/jfr/default.jfc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/jfr/profile.jfc" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/jrt-fs.jar" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/jspawnhelper" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/jvm.cfg" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libattach.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libawt.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libawt_headless.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libawt_xawt.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libdt_socket.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libextnet.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libfontmanager.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libinstrument.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libj2gss.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libj2pcsc.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjaas.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjava.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjavajpeg.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjawt.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjdwp.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjimage.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjli.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjsig.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjsound.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjsvml.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libjvmcicompiler.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/liblcms.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libmanagement.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libmanagement_agent.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libmanagement_ext.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libmlib_image.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libnet.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libnio.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libprefs.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/librmi.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libsctp.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libsimdsort.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libsplashscreen.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libsyslookup.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libverify.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/libzip.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/modules" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/psfont.properties.ja" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/psfontj2d.properties" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/security/blocked.certs" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/security/cacerts" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/security/public_suffix_list.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/server/libjsig.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/server/libjvm.so" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/lib/tzdb.dat" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO/lib/runtime/release" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/planned_features.txt" beforeDir="false" afterPath="$PROJECT_DIR$/planned_features.txt" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/qodana.yaml" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/runtime-min/bin/java" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/runtime-min/bin/keytool" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/runtime-min/lib/modules" beforeDir="false" afterPath="$PROJECT_DIR$/runtime-min/lib/modules" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/runtime-min/release" beforeDir="false" afterPath="$PROJECT_DIR$/runtime-min/release" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/FileIO.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/iso/MDEngine.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/MDEngine.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/t2iso_linux.zip" beforeDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Command.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Command.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/CommandList.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/CommandList.java" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Script.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/shellbridge/Script.java" afterDir="false" />
     </list>
     <option name="SHOW_DIALOG" value="false" />
     <option name="HIGHLIGHT_CONFLICTS" value="true" />
@@ -261,6 +29,16 @@
   </component>
   <component name="ComposerSettings">
     <execution />
+  </component>
+  <component name="EmbeddingIndexingInfo">
+    <option name="cachedIndexableFilesCount" value="332" />
+  </component>
+  <component name="FileTemplateManagerImpl">
+    <option name="RECENT_TEMPLATES">
+      <list>
+        <option value="Class" />
+      </list>
+    </option>
   </component>
   <component name="Git.Settings">
     <option name="RECENT_GIT_ROOT_PATH" value="$PROJECT_DIR$" />
@@ -292,6 +70,10 @@
   </component>
   <component name="PropertiesComponent"><![CDATA[{
   "keyToString": {
+    "Application.Loader.executor": "Run",
+    "Application.Settings.executor": "Run",
+    "Application.Spinner.executor": "Run",
+    "Application.SpinnerPanel.executor": "Run",
     "Application.T2ISO.executor": "Run",
     "ModuleVcsDetector.initialDetectionPerformed": "true",
     "RunOnceActivity.MCP Project settings loaded": "true",
@@ -316,6 +98,7 @@
 }]]></component>
   <component name="RecentsManager">
     <key name="MoveFile.RECENT_KEYS">
+      <recent name="$PROJECT_DIR$/src/main/java/iso" />
       <recent name="$PROJECT_DIR$/src/main/resources/" />
     </key>
   </component>
@@ -357,7 +140,7 @@
       <workItem from="1771821842936" duration="356000" />
       <workItem from="1771822240910" duration="151000" />
       <workItem from="1771822414063" duration="140000" />
-      <workItem from="1771822568749" duration="11307000" />
+      <workItem from="1771822568749" duration="45418000" />
     </task>
     <servers />
   </component>

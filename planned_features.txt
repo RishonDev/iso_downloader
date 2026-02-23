@@ -1,5 +1,3 @@
-Loading screen
 Flashing to ISO
-Theme
-Resume Donwload
+#Later Resume Download
 Verify sha256

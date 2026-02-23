@@ -1,6 +1,6 @@
 package iso.shellbridge;
 
-import java.io.IOException;
+import java.io.*;
 import java.util.ArrayList;
 import java.util.Arrays;
 /***
@@ -8,7 +8,7 @@ import java.util.Arrays;
 ***/
 @SuppressWarnings("unused")
 public class CommandList {
-    ArrayList<Command> c = new ArrayList<>();
+    private final ArrayList<Command> c = new ArrayList<>();
     /***
      * Adds a command ***/
     public void add(Command command){
@@ -21,18 +21,22 @@ public class CommandList {
         for(String i: commands)
             add(new Command(i));
     }
+
     public void add(String commands){
         c.add(new Command(commands));
     }
     public Command get(int i){return c.get(i);}
     public void exec() throws IOException, InterruptedException {
-        for (int i = 0; i<c.toArray().length; i++){
+        for (int i = 0; i < c.size(); i++){
             get(i).exec();
         }
     }
     public void run(){
-        for (int i = 0; i<c.toArray().length; i++){
+        for (int i = 0; i < c.size(); i++){
             get(i).run();
         }
+    }
+    public ArrayList<Command> getCommands(){
+        return c;
     }
 }

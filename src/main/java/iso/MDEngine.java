@@ -26,9 +26,16 @@ public class MDEngine {
     private final String home = System.getProperty("user.home");
     public void readMetadata() throws IOException {
         File dir = new File(home + "/.iso/");
-        boolean b = dir.mkdirs();
+        dir.mkdirs();
         File jsonFile = new File(dir, "distro-metadata.json");
-        Downloader.downloadFile(metadata, jsonFile.getAbsolutePath());
+        contents.clear();
+        try {
+            Downloader.download(metadata, jsonFile.getAbsolutePath());
+        } catch (IOException e) {
+            if (!jsonFile.exists()) {
+                throw e;
+            }
+        }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
             String line;
@@ -85,6 +92,9 @@ public class MDEngine {
                 String url = line.replace("\"", "")
                         .replace(",", "")
                         .trim();
+                if (currentName == null || currentName.isBlank()) {
+                    continue;
+                }
 
                 // filter applied to entry
                 if ((currentName != null && currentName.toLowerCase().contains(f))
@@ -154,6 +164,4 @@ public class MDEngine {
 
         return result;
     }
-
-    //FOR TESTING PURPOSES ONLY
 }

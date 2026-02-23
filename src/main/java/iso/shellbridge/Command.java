@@ -9,7 +9,7 @@ import java.io.InputStreamReader;
 @SuppressWarnings("unused")
 public class Command {
     private String command;
-    private String output;
+    private String output = "";
 
     public String getCommand() {
         return command;
@@ -30,9 +30,10 @@ public class Command {
      * Enables you to run commands while returning an exception if an error occurs.
      * This lets you ***/
     public void exec() throws IOException, InterruptedException {
-        ProcessBuilder pb = new ProcessBuilder(command.split(" ")); // Linux/macOS
-        Process process;
-        process = pb.start();
+        output = "";
+        ProcessBuilder pb = new ProcessBuilder("sh", "-lc", command);
+        pb.redirectErrorStream(true);
+        Process process = pb.start();
         BufferedReader reader = new BufferedReader(
                 new InputStreamReader(process.getInputStream()));
         String line;
@@ -44,27 +45,12 @@ public class Command {
      * method exception signatures or wrap it in a try/catch clause unlike the exec() function
      * ***/
     public void run(){
-        ProcessBuilder pb = new ProcessBuilder(command.split(" ")); // Linux/macOS
-        Process process;
         try {
-            process = pb.start();
-        } catch (IOException e) {
-            throw new RuntimeException(e);
-        }
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()));
-        String line;
-        while (true) {
-            try {
-                if ((line = reader.readLine()) != null) break;
-            } catch (IOException e) {
-                throw new RuntimeException(e);
-            }
-            output += (line + "\n");
-        }
-        try {
-            process.waitFor();
+            exec();
         } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new RuntimeException(e);
+        } catch (IOException e) {
             throw new RuntimeException(e);
         }
     }
@@ -72,6 +58,9 @@ public class Command {
         return output;
     }
     public String[] getOutputArray(){
+        if (output.isBlank()) {
+            return new String[0];
+        }
         return output.split("\n");
     }
 }

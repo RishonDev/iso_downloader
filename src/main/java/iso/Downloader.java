@@ -15,7 +15,7 @@ public class Downloader {
     public boolean isCancelled(){
         return isCancelled;
     }
-    public static void downloadFile(URL url, String outputFileName) throws IOException {
+    public static void download(URL url, String outputFileName) throws IOException {
         try (InputStream in = url.openStream();
              FileOutputStream fos = new FileOutputStream(outputFileName)) {
 
@@ -27,10 +27,10 @@ public class Downloader {
             }
         }
     }
-    public void downloadFileWithProgress(JProgressBar progressBar,
-                                                JLabel label,
-                                                URL url,
-                                                String output) {
+    public void downloadFile(JProgressBar progressBar,
+                             JLabel label,
+                             URL url,
+                             String output) {
 
         try {
             HttpURLConnection conn = (HttpURLConnection) url.openConnection();

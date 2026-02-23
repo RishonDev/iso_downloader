@@ -1,0 +1,36 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project name="maven-antrun-" default="main">
+  <target name="main">
+    <delete quiet="true" dir="runtime" />
+    <delete quiet="true" dir="runtime-min" />
+    <delete quiet="true" dir="T2ISO" />
+    <delete quiet="true" dir="AppDir" />
+    <exec failonerror="true" executable="jlink">
+      <arg value="--add-modules" />
+      <arg value="java.base,java.desktop,jdk.crypto.ec" />
+      <arg value="--strip-debug" />
+      <arg value="--strip-native-commands" />
+      <arg value="--no-header-files" />
+      <arg value="--no-man-pages" />
+      <arg value="--compress=2" />
+      <arg value="--output" />
+      <arg value="runtime-min" />
+    </exec>
+    <exec failonerror="true" executable="jpackage">
+      <arg value="--type" />
+      <arg value="app-image" />
+      <arg value="--name" />
+      <arg value="T2ISO" />
+      <arg value="--input" />
+      <arg value="/home/rishon/Projects/T2Linux/iso_downloader/target" />
+      <arg value="--main-jar" />
+      <arg value="iso-0.2-beta.jar" />
+      <arg value="--main-class" />
+      <arg value="iso.T2ISO" />
+      <arg value="--runtime-image" />
+      <arg value="runtime-min" />
+      <arg value="--icon" />
+      <arg value="/home/rishon/Projects/T2Linux/iso_downloader/packaging/linux/icon.png" />
+    </exec>
+  </target>
+</project>
