@@ -4,6 +4,7 @@
     <delete quiet="true" dir="runtime" />
     <delete quiet="true" dir="runtime-min" />
     <delete quiet="true" dir="T2ISO" />
+    <delete quiet="true" dir="T2ISO.app" />
     <delete quiet="true" dir="AppDir" />
     <exec failonerror="true" executable="jlink">
       <arg value="--add-modules" />
