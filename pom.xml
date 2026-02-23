@@ -105,9 +105,6 @@
                                     <arg value="--runtime-image"/>
                                     <arg value="runtime-min"/>
 
-                                    <arg value="--icon"/>
-                                    <arg value="${project.basedir}/packaging/linux/icon.png"/>
-
                                 </exec>
 
                             </target>

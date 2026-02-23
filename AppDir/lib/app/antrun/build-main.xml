@@ -29,8 +29,6 @@
       <arg value="iso.T2ISO" />
       <arg value="--runtime-image" />
       <arg value="runtime-min" />
-      <arg value="--icon" />
-      <arg value="/home/rishon/Projects/T2Linux/iso_downloader/packaging/linux/icon.png" />
     </exec>
   </target>
 </project>
