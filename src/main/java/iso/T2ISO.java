@@ -184,20 +184,12 @@ public class T2ISO {
             if (selected == null) {
                 return;
             }
-
-            versionBox.removeAllItems();
-            List<String[]> flavourItems = itemsByFlavour.getOrDefault(selected, List.of());
-            for (String[] parts : flavourItems) {
-
-                String version;
-                if (parts.length > 2 && !parts[2].startsWith("http")) {
-                    version = parts[1] + " " + parts[2];
-                } else {
-                    version = parts[1];
-                }
-                versionBox.addItem(version.trim());
-            }
+            populateVersions(selected);
         });
+        String initialSelected = (String) flavourBox.getSelectedItem();
+        if (initialSelected != null) {
+            populateVersions(initialSelected);
+        }
 
         deviceField.addActionListener(e -> {
             String device = deviceField.getText().trim();
@@ -207,7 +199,7 @@ public class T2ISO {
                 return;
             }
             if (device.isEmpty()) {
-                showError("No USB selected");
+                showError("No USB selected! Please click on the provided text box to select.");
                 statusLabel.setText("Invalid device");
                 return;
             }
@@ -229,7 +221,7 @@ public class T2ISO {
             if (flashCheck.isSelected()) {
                 String device = deviceField.getText().trim();
                 if (device.isEmpty()) {
-                    showError("No USB selected");
+                    showError("No USB selected! Please click on the provided text box to select.");
                     return;
                 }
                 if (!device.startsWith("/dev/")) {
@@ -239,6 +231,20 @@ public class T2ISO {
             }
             startDownload();
         });
+    }
+
+    private void populateVersions(String selectedFlavour) {
+        versionBox.removeAllItems();
+        List<String[]> flavourItems = itemsByFlavour.getOrDefault(selectedFlavour, List.of());
+        for (String[] parts : flavourItems) {
+            String version;
+            if (parts.length > 2 && !parts[2].startsWith("http")) {
+                version = parts[1] + " " + parts[2];
+            } else {
+                version = parts[1];
+            }
+            versionBox.addItem(version.trim());
+        }
     }
 
     private void openDeviceChooser() {

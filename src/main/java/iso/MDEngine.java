@@ -11,6 +11,7 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.LinkedHashMap;
 import java.util.Map;
+import java.util.concurrent.atomic.AtomicReference;
 
 public class MDEngine {
     private URL metadata;
@@ -29,12 +30,27 @@ public class MDEngine {
         dir.mkdirs();
         File jsonFile = new File(dir, "distro-metadata.json");
         contents.clear();
-        try {
-            Downloader.download(metadata, jsonFile.getAbsolutePath());
-        } catch (IOException e) {
-            if (!jsonFile.exists()) {
-                throw e;
+
+        AtomicReference<IOException> downloadError = new AtomicReference<>();
+        Thread downloadThread = new Thread(() -> {
+            try {
+                Downloader.download(metadata, jsonFile.getAbsolutePath());
+            } catch (IOException e) {
+                downloadError.set(e);
             }
+        }, "metadata-download-thread");
+        downloadThread.start();
+
+        try {
+            downloadThread.join();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            throw new IOException("Metadata download was interrupted", e);
+        }
+
+        IOException error = downloadError.get();
+        if (error != null && !jsonFile.exists()) {
+            throw error;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
