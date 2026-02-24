@@ -7,8 +7,14 @@ import javax.swing.JProgressBar;
 import javax.swing.SwingUtilities;
 import java.io.BufferedWriter;
 import java.io.BufferedReader;
+import java.io.BufferedInputStream;
+import java.io.File;
+import java.io.FileOutputStream;
+import java.io.IOException;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.net.URI;
+import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.util.Arrays;
 import java.util.ArrayList;
@@ -20,14 +26,20 @@ import java.util.concurrent.atomic.AtomicReference;
 
 public class USB {
     private static final Pattern MAC_PARTITION_PATTERN = Pattern.compile("^/dev/r?(disk\\d+)s\\d+$");
+    private static final String WINDOWS_DD_PRIMARY_URL = "https://www.chrysocome.net/downloads/ddrelease64.exe";
+    private static final String WINDOWS_DD_FALLBACK_URL = "https://frippery.org/files/busybox/busybox64.exe";
+    private static final int COPY_BUFFER_SIZE = 64 * 1024;
 
     private boolean isMac() {
         return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("mac");
     }
+    private boolean isWindows() {
+        return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
+    }
 
     public String getDF(String mountPoint) throws Exception {
         if (isMac()) {
-            ProcessBuilder pb = new ProcessBuilder("df", mountPoint);
+            ProcessBuilder pb = new ProcessBuilder("df", "-P", mountPoint);
             Process process = pb.start();
 
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
@@ -43,7 +55,7 @@ public class USB {
                 if (parts.length == 0 || parts[0].isBlank()) {
                     throw new RuntimeException("Could not resolve device for mount point: " + mountPoint);
                 }
-                return parts[0].trim();
+                return parts[0].trim().replaceFirst("^/dev/r", "/dev/");
             }
         }
 
@@ -103,6 +115,10 @@ public class USB {
         return "/dev/" + parent.trim();
     }
 
+    public String getParentDirectory(String partition) throws Exception {
+        return getParentDisk(partition);
+    }
+
     public  void flash(
             String isoPath,
             String devicePath,
@@ -113,10 +129,13 @@ public class USB {
 
         new Thread(() -> {
             try {
-                char[] sudoPassword = promptForSudoPassword();
-                if (sudoPassword == null || sudoPassword.length == 0) {
-                    SwingUtilities.invokeLater(() -> statusLabel.setText("Flash cancelled"));
-                    return;
+                char[] sudoPassword = null;
+                if (!isWindows()) {
+                    sudoPassword = promptForSudoPassword();
+                    if (sudoPassword == null || sudoPassword.length == 0) {
+                        SwingUtilities.invokeLater(() -> statusLabel.setText("Flash cancelled"));
+                        return;
+                    }
                 }
 
                 // Enable progress display
@@ -127,20 +146,36 @@ public class USB {
                 statusLabel.setText("Starting flash...");
 
                 List<String> cmd = new ArrayList<>();
-                cmd.add("sudo");
-                cmd.add("-S");
-                cmd.add("-p");
-                cmd.add("");
-                cmd.add("dd");
-                cmd.add("if=" + isoPath);
-                cmd.add("of=" + devicePath);
-                if (isMac()) {
-                    cmd.add("bs=4m");
-                    cmd.add("oflag=sync");
-                } else {
+                if (isWindows()) {
+                    SwingUtilities.invokeLater(() ->
+                            statusLabel.setText("Preparing flasher tool (may download once)..."));
+                    String ddExe = resolveWindowsDdExecutable(statusLabel);
+                    if (ddExe.toLowerCase(Locale.ROOT).contains("busybox")) {
+                        cmd.add(ddExe);
+                        cmd.add("dd");
+                    } else {
+                        cmd.add(ddExe);
+                    }
+                    cmd.add("if=" + isoPath);
+                    cmd.add("of=" + devicePath);
                     cmd.add("bs=4M");
-                    cmd.add("status=progress");
                     cmd.add("conv=fsync");
+                } else {
+                    cmd.add("sudo");
+                    cmd.add("-S");
+                    cmd.add("-p");
+                    cmd.add("");
+                    cmd.add("dd");
+                    cmd.add("if=" + isoPath);
+                    cmd.add("of=" + devicePath);
+                    if (isMac()) {
+                        cmd.add("bs=4m");
+                        cmd.add("oflag=sync");
+                    } else {
+                        cmd.add("bs=4M");
+                        cmd.add("status=progress");
+                        cmd.add("conv=fsync");
+                    }
                 }
 
                 ProcessBuilder pb = new ProcessBuilder(cmd);
@@ -148,13 +183,15 @@ public class USB {
                 pb.redirectErrorStream(true);
 
                 Process process = pb.start();
-                try (BufferedWriter writer = new BufferedWriter(
-                        new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
-                    writer.write(sudoPassword);
-                    writer.newLine();
-                    writer.flush();
-                } finally {
-                    Arrays.fill(sudoPassword, '\0');
+                if (!isWindows()) {
+                    try (BufferedWriter writer = new BufferedWriter(
+                            new OutputStreamWriter(process.getOutputStream(), StandardCharsets.UTF_8))) {
+                        writer.write(sudoPassword);
+                        writer.newLine();
+                        writer.flush();
+                    } finally {
+                        Arrays.fill(sudoPassword, '\0');
+                    }
                 }
 
                 BufferedReader reader = new BufferedReader(
@@ -238,5 +275,72 @@ public class USB {
         }
 
         return passwordRef.get();
+    }
+
+    private String resolveWindowsDdExecutable(JLabel statusLabel) throws Exception {
+        String env = System.getenv("ISO_DD_EXE");
+        if (env != null && !env.isBlank() && new File(env).exists()) {
+            return env;
+        }
+
+        String[] pathCandidates = {"dd.exe", "busybox.exe", "busybox64.exe"};
+        for (String candidate : pathCandidates) {
+            if (isCommandAvailable(candidate)) {
+                return candidate;
+            }
+        }
+
+        File isoDir = new File(System.getProperty("user.home"), ".iso");
+        if (!isoDir.exists()) {
+            isoDir.mkdirs();
+        }
+
+        File localDd = new File(isoDir, "ddrelease64.exe");
+        if (!localDd.exists()) {
+            try {
+                SwingUtilities.invokeLater(() ->
+                        statusLabel.setText("Downloading Windows flasher tool..."));
+                downloadWindowsDd(localDd, WINDOWS_DD_PRIMARY_URL);
+            } catch (Exception primaryError) {
+                // Fallback: busybox dd-compatible binary.
+                File fallbackBusybox = new File(isoDir, "busybox64.exe");
+                if (!fallbackBusybox.exists()) {
+                    SwingUtilities.invokeLater(() ->
+                            statusLabel.setText("Primary tool failed, downloading fallback..."));
+                    downloadWindowsDd(fallbackBusybox, WINDOWS_DD_FALLBACK_URL);
+                }
+                return fallbackBusybox.getAbsolutePath();
+            }
+        }
+
+        if (!localDd.exists()) {
+            throw new RuntimeException("Could not find/download Windows dd tool");
+        }
+
+        return localDd.getAbsolutePath();
+    }
+
+    private boolean isCommandAvailable(String command) {
+        try {
+            Process process = new ProcessBuilder(command, "--help").start();
+            process.waitFor();
+            return true;
+        } catch (Exception ignored) {
+            return false;
+        }
+    }
+
+    private void downloadWindowsDd(File destination, String sourceUrl) throws Exception {
+        URL url = new URI(sourceUrl).toURL();
+        try (BufferedInputStream in = new BufferedInputStream(url.openStream(), COPY_BUFFER_SIZE);
+             FileOutputStream out = new FileOutputStream(destination)) {
+            byte[] buffer = new byte[COPY_BUFFER_SIZE];
+            int n;
+            while ((n = in.read(buffer)) != -1) {
+                out.write(buffer, 0, n);
+            }
+        } catch (IOException e) {
+            throw new RuntimeException("Failed to download Windows dd tool", e);
+        }
     }
 }

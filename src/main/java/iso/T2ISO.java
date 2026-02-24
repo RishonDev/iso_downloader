@@ -3,6 +3,7 @@ package iso;
 import javax.swing.BorderFactory;
 import javax.swing.JButton;
 import javax.swing.JCheckBox;
+import javax.swing.JCheckBoxMenuItem;
 import javax.swing.JComboBox;
 import javax.swing.JFileChooser;
 import javax.swing.JFrame;
@@ -16,8 +17,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import javax.swing.UIManager;
-import javax.swing.UnsupportedLookAndFeelException;
 import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
@@ -25,6 +24,13 @@ import java.awt.Insets;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
+import java.io.IOException;
+import java.io.InputStream;
+import java.io.OutputStream;
+import java.net.URL;
+import java.nio.file.Files;
+import java.nio.file.Path;
+import java.nio.file.Paths;
 import java.security.MessageDigest;
 import java.util.ArrayList;
 import java.util.HashSet;
@@ -32,13 +38,18 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.Objects;
+import java.util.Properties;
 import java.util.Set;
+import java.util.concurrent.atomic.AtomicInteger;
 
 public class T2ISO {
     private static final int HASH_BUFFER_SIZE = 64 * 1024;
 
     private final Downloader downloader = new Downloader();
     private final String home = System.getProperty("user.home");
+    private final Path settingsDir = Paths.get(home, ".iso");
+    private final Path settingsFile = settingsDir.resolve("settings.properties");
+    private final Properties settings = new Properties();
     private String output;
 
     private final JFrame frame = new JFrame("T2 Linux ISO Downloader");
@@ -75,12 +86,46 @@ public class T2ISO {
     }
 
     private void configureLookAndFeel() {
+        ThemeUtil.configureLookAndFeel(getBool("darkMode") ? Boolean.TRUE : null);
+    }
+
+    private void refreshLookAndFeel() {
+        configureLookAndFeel();
+        SwingUtilities.updateComponentTreeUI(frame);
+        frame.pack();
+        frame.setMinimumSize(frame.getSize());
+    }
+
+    private void loadSettings() {
         try {
-            UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
-        } catch (ClassNotFoundException | InstantiationException | IllegalAccessException |
-                 UnsupportedLookAndFeelException e) {
-            throw new RuntimeException(e);
+            Files.createDirectories(settingsDir);
+            if (Files.exists(settingsFile)) {
+                try (InputStream in = Files.newInputStream(settingsFile)) {
+                    settings.load(in);
+                }
+            }
+        } catch (IOException e) {
+            showWarning("Could not read settings: " + e.getMessage());
         }
+    }
+
+    private void saveSettings() {
+        try {
+            Files.createDirectories(settingsDir);
+            try (OutputStream out = Files.newOutputStream(settingsFile)) {
+                settings.store(out, "ISO Settings");
+            }
+        } catch (IOException e) {
+            showWarning("Could not save settings: " + e.getMessage());
+        }
+    }
+
+    private boolean getBool(String key) {
+        return Boolean.parseBoolean(settings.getProperty(key, "false"));
+    }
+
+    private void setBool(String key, boolean value) {
+        settings.setProperty(key, Boolean.toString(value));
     }
 
     private List<String> loadItems() {
@@ -129,8 +174,46 @@ public class T2ISO {
         JMenuItem resumeItem = new JMenuItem("Resume Download");
         resumeItem.addActionListener(e -> startDownload());
 
+        JMenu settingsMenu = new JMenu("Settings");
+        JCheckBoxMenuItem enablePartsItem = new JCheckBoxMenuItem("Enable parts", getBool("enableParts"));
+        JCheckBoxMenuItem enableResumeItem = new JCheckBoxMenuItem("Enable resume", getBool("enableResume"));
+        JCheckBoxMenuItem enableAutoMergeItem =
+                new JCheckBoxMenuItem("Enable auto merge", getBool("enableAutoMerge"));
+        JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Force dark mode", getBool("darkMode"));
+
+        enableResumeItem.addActionListener(e -> {
+            if (enableResumeItem.isSelected()) {
+                enablePartsItem.setSelected(true);
+                setBool("enableParts", true);
+            }
+            setBool("enableResume", enableResumeItem.isSelected());
+            saveSettings();
+        });
+        enablePartsItem.addActionListener(e -> {
+            if (!enablePartsItem.isSelected() && enableResumeItem.isSelected()) {
+                enablePartsItem.setSelected(true);
+                return;
+            }
+            setBool("enableParts", enablePartsItem.isSelected());
+            saveSettings();
+        });
+        enableAutoMergeItem.addActionListener(e -> {
+            setBool("enableAutoMerge", enableAutoMergeItem.isSelected());
+            saveSettings();
+        });
+        darkModeItem.addActionListener(e -> {
+            setBool("darkMode", darkModeItem.isSelected());
+            saveSettings();
+            refreshLookAndFeel();
+        });
+
         fileMenu.add(resumeItem);
+        settingsMenu.add(enablePartsItem);
+        settingsMenu.add(enableResumeItem);
+        settingsMenu.add(enableAutoMergeItem);
+        settingsMenu.add(darkModeItem);
         menuBar.add(fileMenu);
+        menuBar.add(settingsMenu);
         return menuBar;
     }
 
@@ -274,6 +357,24 @@ public class T2ISO {
             String selectedFlavour = Objects.requireNonNull(flavourBox.getSelectedItem()).toString();
             String selectedVersion = Objects.requireNonNull(versionBox.getSelectedItem()).toString();
             String targetOutput = buildOutputPath(selectedFlavour, selectedVersion);
+            List<String[]> flavourItems = itemsByFlavour.getOrDefault(selectedFlavour, List.of());
+
+            try {
+                if (!handleExistingDownloadFile(targetOutput, flavourItems, selectedVersion)) {
+                    SwingUtilities.invokeLater(() -> {
+                        downloadButton.setVisible(true);
+                        cancelButton.setVisible(false);
+                    });
+                    return;
+                }
+            } catch (Exception ex) {
+                showError(ex.getMessage());
+                SwingUtilities.invokeLater(() -> {
+                    downloadButton.setVisible(true);
+                    cancelButton.setVisible(false);
+                });
+                return;
+            }
 
             SwingUtilities.invokeLater(() -> {
                 downloadButton.setVisible(false);
@@ -282,7 +383,7 @@ public class T2ISO {
             });
 
             try {
-                download(itemsByFlavour.getOrDefault(selectedFlavour, List.of()), selectedFlavour, selectedVersion);
+                download(flavourItems, selectedFlavour, selectedVersion);
             } catch (Exception ex) {
                 showError(ex.getMessage());
                 SwingUtilities.invokeLater(() -> {
@@ -292,6 +393,80 @@ public class T2ISO {
                 });
             }
         }).start();
+    }
+
+    private boolean handleExistingDownloadFile(String outputPath,
+                                               List<String[]> flavourItems,
+                                               String selectedVersion) throws Exception {
+        File outputFile = new File(outputPath);
+        if (!outputFile.exists()) {
+            return true;
+        }
+
+        long expectedSize = computeExpectedIsoSize(flavourItems, selectedVersion);
+        long existingSize = outputFile.length();
+        if (expectedSize > 0 && existingSize == expectedSize) {
+            SwingUtilities.invokeLater(() ->
+                    JOptionPane.showMessageDialog(
+                            frame,
+                            "This ISO is already downloaded.",
+                            "Already Downloaded",
+                            JOptionPane.INFORMATION_MESSAGE
+                    ));
+            return false;
+        }
+
+        AtomicInteger choice = new AtomicInteger(JOptionPane.CLOSED_OPTION);
+        Runnable showPrompt = () -> {
+            Object[] options = {"Continue", "Delete"};
+            int result = JOptionPane.showOptionDialog(
+                    frame,
+                    "A previous download file already exists.\nContinue from existing data or delete and download again?",
+                    "Existing Download Found",
+                    JOptionPane.DEFAULT_OPTION,
+                    JOptionPane.QUESTION_MESSAGE,
+                    null,
+                    options,
+                    options[0]
+            );
+            choice.set(result);
+        };
+
+        if (SwingUtilities.isEventDispatchThread()) {
+            showPrompt.run();
+        } else {
+            SwingUtilities.invokeAndWait(showPrompt);
+        }
+
+        if (choice.get() == 1) { // Delete
+            if (!outputFile.delete()) {
+                throw new RuntimeException("Could not delete existing download file.");
+            }
+            return true;
+        }
+
+        return choice.get() == 0; // Continue only
+    }
+
+    private long computeExpectedIsoSize(List<String[]> flavourItems, String selectedVersion) {
+        long total = 0L;
+        for (String[] data : flavourItems) {
+            if (data.length < 4 || !isVersionMatch(data, selectedVersion)) {
+                continue;
+            }
+            for (int p = 3; p < data.length; p++) {
+                try {
+                    long partSize = downloader.getRemoteFileSize(new java.net.URI(data[p]).toURL());
+                    if (partSize <= 0) {
+                        return -1L;
+                    }
+                    total += partSize;
+                } catch (Exception ignored) {
+                    return -1L;
+                }
+            }
+        }
+        return total > 0 ? total : -1L;
     }
 
     private void buildLayout() {
@@ -351,6 +526,7 @@ public class T2ISO {
     }
 
     void start() {
+        loadSettings();
         configureLookAndFeel();
 
         List<String> items = loadItems();
@@ -400,6 +576,7 @@ public class T2ISO {
     void download(List<String[]> meta, String edition, String version) throws Exception {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         output = buildOutputPath(edition, version);
+        long downloadedBytes = new File(output).exists() ? new File(output).length() : 0L;
         boolean downloadedAtLeastOnePart = false;
 
         for (String[] data : meta) {
@@ -421,11 +598,24 @@ public class T2ISO {
 
             for (int p = 0; p < totalParts; p++) {
                 int partNum = p + 1;
+                URL partUrl = new java.net.URI(data[3 + p]).toURL();
+                long partSize = downloader.getRemoteFileSize(partUrl);
+
+                if (partSize > 0 && downloadedBytes >= partSize) {
+                    downloadedBytes -= partSize;
+                    int skipped = partNum;
+                    SwingUtilities.invokeLater(() ->
+                            partLabel.setText("Skipping downloaded part " + skipped + " of " + totalParts));
+                    continue;
+                }
+
+                long partOffset = downloadedBytes;
+                downloadedBytes = 0L;
                 SwingUtilities.invokeLater(() ->
                         partLabel.setText("Downloading part " + partNum + " of " + totalParts));
 
                 downloader.downloadFile(progressBar, statusLabel,
-                        new java.net.URI(data[3 + p]).toURL(), output);
+                        partUrl, output, partOffset);
             }
         }
 

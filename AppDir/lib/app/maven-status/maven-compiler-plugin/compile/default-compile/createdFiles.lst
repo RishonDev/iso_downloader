@@ -1,4 +1,3 @@
-iso/Settings.class
 iso/T2ISO.class
 iso/MDEngine.class
 iso/shellbridge/Command.class
@@ -6,4 +5,5 @@ iso/shellbridge/Script.class
 iso/Downloader.class
 iso/T2ISO$1.class
 iso/shellbridge/CommandList.class
+iso/ThemeUtil.class
 iso/USB.class
