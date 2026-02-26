@@ -12,6 +12,8 @@ import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
+import java.util.Map;
+import java.util.concurrent.ConcurrentHashMap;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -20,6 +22,7 @@ public class Downloader {
     private static final int BUFFER_SIZE = 256 * 1024;
     private static final long UI_UPDATE_INTERVAL_MS = 150L;
     private static final Pattern CONTENT_RANGE_TOTAL = Pattern.compile(".*/(\\d+)$");
+    private final Map<String, Long> remoteFileSizeCache = new ConcurrentHashMap<>();
     private volatile boolean isCancelled = false;
 
     public void setCancelled(boolean b) {
@@ -162,6 +165,12 @@ public class Downloader {
     }
 
     public long getRemoteFileSize(URL url) {
+        String key = url.toString();
+        Long cachedSize = remoteFileSizeCache.get(key);
+        if (cachedSize != null && cachedSize > 0) {
+            return cachedSize;
+        }
+
         HttpURLConnection conn = null;
         try {
             conn = (HttpURLConnection) url.openConnection();
@@ -173,6 +182,7 @@ public class Downloader {
             conn.connect();
             long size = conn.getContentLengthLong();
             if (size > 0) {
+                remoteFileSizeCache.put(key, size);
                 return size;
             }
         } catch (Exception ignored) {
@@ -194,10 +204,18 @@ public class Downloader {
             if (contentRange != null) {
                 Matcher matcher = CONTENT_RANGE_TOTAL.matcher(contentRange.trim());
                 if (matcher.find()) {
-                    return Long.parseLong(matcher.group(1));
+                    long size = Long.parseLong(matcher.group(1));
+                    if (size > 0) {
+                        remoteFileSizeCache.put(key, size);
+                    }
+                    return size;
                 }
             }
-            return conn.getContentLengthLong();
+            long size = conn.getContentLengthLong();
+            if (size > 0) {
+                remoteFileSizeCache.put(key, size);
+            }
+            return size;
         } catch (Exception ignored) {
             return -1L;
         } finally {

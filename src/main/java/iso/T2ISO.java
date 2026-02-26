@@ -17,7 +17,6 @@ import javax.swing.JProgressBar;
 import javax.swing.JTextField;
 import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
-import java.awt.Desktop;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
 import java.awt.Insets;
@@ -36,6 +35,7 @@ import java.util.ArrayList;
 import java.util.HashSet;
 import java.util.LinkedHashMap;
 import java.util.List;
+import java.util.Locale;
 import java.util.Map;
 import java.util.Objects;
 import java.util.Properties;
@@ -121,7 +121,8 @@ public class T2ISO {
     }
 
     private boolean getBool(String key) {
-        return Boolean.parseBoolean(settings.getProperty(key, "false"));
+        String defaultValue = "verifyIso".equals(key) ? "true" : "false";
+        return Boolean.parseBoolean(settings.getProperty(key, defaultValue));
     }
 
     private void setBool(String key, boolean value) {
@@ -136,9 +137,7 @@ public class T2ISO {
             return List.of();
         }
 
-        ArrayList<String> items = engine.mergeToSingleLine(engine.getMetadata("Ubuntu"));
-        items.addAll(engine.mergeToSingleLine(engine.getMetadata("Mint")));
-        return items;
+        return engine.mergeToSingleLine(engine.getMetadata());
     }
 
     private void indexItemsByFlavour(List<String> items) {
@@ -180,6 +179,8 @@ public class T2ISO {
         JCheckBoxMenuItem enableAutoMergeItem =
                 new JCheckBoxMenuItem("Enable auto merge", getBool("enableAutoMerge"));
         JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Force dark mode", getBool("darkMode"));
+        JCheckBoxMenuItem verifyIsoItem = new JCheckBoxMenuItem("Verify ISO", getBool("verifyIso"));
+        JCheckBoxMenuItem verifyUsbItem = new JCheckBoxMenuItem("Verify USB", getBool("verifyUsb"));
 
         enableResumeItem.addActionListener(e -> {
             if (enableResumeItem.isSelected()) {
@@ -206,12 +207,22 @@ public class T2ISO {
             saveSettings();
             refreshLookAndFeel();
         });
+        verifyIsoItem.addActionListener(e -> {
+            setBool("verifyIso", verifyIsoItem.isSelected());
+            saveSettings();
+        });
+        verifyUsbItem.addActionListener(e -> {
+            setBool("verifyUsb", verifyUsbItem.isSelected());
+            saveSettings();
+        });
 
         fileMenu.add(resumeItem);
         settingsMenu.add(enablePartsItem);
         settingsMenu.add(enableResumeItem);
         settingsMenu.add(enableAutoMergeItem);
         settingsMenu.add(darkModeItem);
+        settingsMenu.add(verifyIsoItem);
+        settingsMenu.add(verifyUsbItem);
         menuBar.add(fileMenu);
         menuBar.add(settingsMenu);
         return menuBar;
@@ -332,35 +343,54 @@ public class T2ISO {
 
     private void openDeviceChooser() {
         JFileChooser chooser = new JFileChooser();
+        String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
+        File volumesDir = new File("/Volumes");
         File mediaDir = new File("/run/media/" + System.getProperty("user.name"));
-        if (mediaDir.isDirectory()) {
+        if (osName.contains("mac") && volumesDir.isDirectory()) {
+            chooser.setCurrentDirectory(volumesDir);
+        } else if (mediaDir.isDirectory()) {
             chooser.setCurrentDirectory(mediaDir);
         } else {
             chooser.setCurrentDirectory(new File(home));
         }
         chooser.setDialogTitle("Select USB Device");
-        chooser.setFileSelectionMode(JFileChooser.FILES_ONLY);
+        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
         chooser.setMultiSelectionEnabled(false);
 
         int result = chooser.showOpenDialog(frame);
         if (result == JFileChooser.APPROVE_OPTION) {
             String selectedPath = chooser.getSelectedFile().getAbsolutePath();
-            deviceField.setText(selectedPath);
-            statusLabel.setText("Device selected: " + selectedPath);
+            String resolvedDevice = selectedPath;
+            try {
+                USB usb = new USB();
+                if (selectedPath.startsWith("/dev/")) {
+                    resolvedDevice = usb.getParentDirectory(selectedPath);
+                } else {
+                    String partition = usb.getDF(selectedPath);
+                    resolvedDevice = usb.getParentDirectory(partition);
+                }
+                deviceField.setText(resolvedDevice);
+                statusLabel.setText("Device selected: " + resolvedDevice);
+            } catch (Exception ex) {
+                showError("Could not resolve device from selection. Choose a mounted USB volume or /dev path.");
+                statusLabel.setText("Invalid device");
+            }
         }
     }
 
     private void startDownload() {
+        String selectedFlavour = Objects.requireNonNull(flavourBox.getSelectedItem()).toString();
+        String selectedVersion = Objects.requireNonNull(versionBox.getSelectedItem()).toString();
+        boolean flashSelected = flashCheck.isSelected();
+        String selectedDevice = deviceField.getText().trim();
+        String targetOutput = buildOutputPath(selectedFlavour, selectedVersion);
+        List<String[]> flavourItems = itemsByFlavour.getOrDefault(selectedFlavour, List.of());
+
         new Thread(() -> {
             downloader.setCancelled(false);
 
-            String selectedFlavour = Objects.requireNonNull(flavourBox.getSelectedItem()).toString();
-            String selectedVersion = Objects.requireNonNull(versionBox.getSelectedItem()).toString();
-            String targetOutput = buildOutputPath(selectedFlavour, selectedVersion);
-            List<String[]> flavourItems = itemsByFlavour.getOrDefault(selectedFlavour, List.of());
-
             try {
-                if (!handleExistingDownloadFile(targetOutput, flavourItems, selectedVersion)) {
+                if (!handleExistingDownloadFile(targetOutput, flavourItems, selectedVersion, flashSelected)) {
                     SwingUtilities.invokeLater(() -> {
                         downloadButton.setVisible(true);
                         cancelButton.setVisible(false);
@@ -383,7 +413,7 @@ public class T2ISO {
             });
 
             try {
-                download(flavourItems, selectedFlavour, selectedVersion);
+                download(flavourItems, selectedFlavour, selectedVersion, flashSelected, selectedDevice);
             } catch (Exception ex) {
                 showError(ex.getMessage());
                 SwingUtilities.invokeLater(() -> {
@@ -397,9 +427,14 @@ public class T2ISO {
 
     private boolean handleExistingDownloadFile(String outputPath,
                                                List<String[]> flavourItems,
-                                               String selectedVersion) throws Exception {
+                                               String selectedVersion,
+                                               boolean flashSelected) throws Exception {
         File outputFile = new File(outputPath);
         if (!outputFile.exists()) {
+            return true;
+        }
+
+        if (flashSelected) {
             return true;
         }
 
@@ -549,14 +584,6 @@ public class T2ISO {
         return home + "/Downloads/" + iso;
     }
 
-    void revealFile(String path) {
-        try {
-            Desktop.getDesktop().open(new File(path).getParentFile());
-        } catch (Exception e) {
-            showError("Could not open file location");
-        }
-    }
-
     String sha256(String file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
         try (var fis = new java.io.FileInputStream(file)) {
@@ -573,7 +600,11 @@ public class T2ISO {
         return hex.toString();
     }
 
-    void download(List<String[]> meta, String edition, String version) throws Exception {
+    void download(List<String[]> meta,
+                  String edition,
+                  String version,
+                  boolean flashSelected,
+                  String selectedDevice) throws Exception {
         frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         output = buildOutputPath(edition, version);
         long downloadedBytes = new File(output).exists() ? new File(output).length() : 0L;
@@ -643,20 +674,38 @@ public class T2ISO {
             cancelButton.setVisible(false);
         });
 
-        revealFile(output);
         try {
-            String checksum = sha256(output);
-            JOptionPane.showMessageDialog(frame,
-                    "SHA256:\n" + checksum,
-                    "Integrity Check",
-                    JOptionPane.INFORMATION_MESSAGE);
-            if (flashCheck.isSelected()) {
-                String device = deviceField.getText().trim();
+            String expectedSha = findExpectedSha256(meta, edition, version);
+            String actualSha = null;
+            if (getBool("verifyIso")) {
+                SwingUtilities.invokeLater(() -> statusLabel.setText("Verifying ISO..."));
+                actualSha = sha256(output);
+                if (expectedSha == null || expectedSha.isBlank()) {
+                    showWarning("Verify ISO is enabled, but metadata has no SHA256 for this distro.");
+                } else if (!actualSha.equalsIgnoreCase(expectedSha)) {
+                    showError("ISO verification failed: checksum mismatch.");
+                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    return;
+                } else {
+                    SwingUtilities.invokeLater(() -> statusLabel.setText("ISO verification passed"));
+                }
+            }
+
+            if (flashSelected) {
+                String device = selectedDevice;
                 if (device.isEmpty() || !device.startsWith("/dev/")) {
                     showError("Cannot flash: invalid USB device path");
                 } else {
                     long totalBytes = new File(output).length();
-                    new USB().flash(output, device, totalBytes, progressBar, statusLabel);
+                    new USB().flash(
+                            output,
+                            device,
+                            totalBytes,
+                            progressBar,
+                            statusLabel,
+                            getBool("verifyUsb"),
+                            expectedSha != null && !expectedSha.isBlank() ? expectedSha : actualSha
+                    );
                 }
             }
             frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
@@ -667,6 +716,25 @@ public class T2ISO {
 
     private boolean isVersionMatch(String[] data, String version) {
         return version.contains(data[1]) || (data.length > 2 && version.contains(data[2]));
+    }
+
+    private String findExpectedSha256(List<String[]> meta, String edition, String version) {
+        for (String[] data : meta) {
+            if (data.length < 4 || !edition.equals(data[0]) || !isVersionMatch(data, version)) {
+                continue;
+            }
+            for (int i = 3; i < data.length; i++) {
+                String candidate = data[i].trim();
+                if (!candidate.startsWith("http")) {
+                    continue;
+                }
+                String sha = engine.getSha256ForIsoUrl(candidate);
+                if (sha != null && !sha.isBlank()) {
+                    return sha;
+                }
+            }
+        }
+        return null;
     }
 
     public static void main(String[] args) {

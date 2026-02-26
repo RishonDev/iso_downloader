@@ -2,7 +2,7 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>t2linux</groupId>
     <artifactId>iso</artifactId>
-    <version>0.2-beta</version>
+    <version>0.5-beta</version>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>

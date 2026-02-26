@@ -9,11 +9,21 @@ import java.net.URI;
 import java.net.URISyntaxException;
 import java.net.URL;
 import java.util.ArrayList;
+import java.util.HashMap;
 import java.util.LinkedHashMap;
 import java.util.Map;
 import java.util.concurrent.atomic.AtomicReference;
+import java.util.regex.Matcher;
+import java.util.regex.Pattern;
 
 public class MDEngine {
+    private static final Pattern ENTRY_PATTERN = Pattern.compile(
+            "\\{\\s*\"name\"\\s*:\\s*\"[^\"]+\"\\s*,\\s*\"iso\"\\s*:\\s*\\[(.*?)\\](.*?)\\}",
+            Pattern.DOTALL
+    );
+    private static final Pattern URL_PATTERN = Pattern.compile("\"(https?://[^\"]+)\"");
+    private static final Pattern SHA_PATTERN = Pattern.compile("\"sha256\"\\s*:\\s*\"([0-9a-fA-F]{64})\"");
+
     private URL metadata;
     {
         try {
@@ -24,6 +34,7 @@ public class MDEngine {
     }
     @SuppressWarnings("CanBeFinal")
     ArrayList<String> contents = new ArrayList<>();
+    private final Map<String, String> shaByIsoUrl = new HashMap<>();
     private final String home = System.getProperty("user.home");
     public void readMetadata() throws IOException {
         File dir = new File(home + "/.iso/");
@@ -59,8 +70,8 @@ public class MDEngine {
                 contents.add(line);
             }
         }
+        indexShaByIsoUrl();
     }
-/*
     public ArrayList<String> getMetadata() {
         ArrayList<String> lines = new ArrayList<>();
 
@@ -85,7 +96,7 @@ public class MDEngine {
 
         return lines;
     }
-*/
+
     public ArrayList<String> getMetadata(String filter) {
         ArrayList<String> lines = new ArrayList<>();
 
@@ -179,5 +190,31 @@ public class MDEngine {
         }
 
         return result;
+    }
+
+    public String getSha256ForIsoUrl(String isoUrl) {
+        if (isoUrl == null || isoUrl.isBlank()) {
+            return null;
+        }
+        return shaByIsoUrl.get(isoUrl.trim());
+    }
+
+    private void indexShaByIsoUrl() {
+        shaByIsoUrl.clear();
+        String json = String.join("\n", contents);
+        Matcher entryMatcher = ENTRY_PATTERN.matcher(json);
+        while (entryMatcher.find()) {
+            String isoBlock = entryMatcher.group(1);
+            String suffixBlock = entryMatcher.group(2);
+            Matcher shaMatcher = SHA_PATTERN.matcher(suffixBlock);
+            if (!shaMatcher.find()) {
+                continue;
+            }
+            String sha = shaMatcher.group(1).toLowerCase();
+            Matcher urlMatcher = URL_PATTERN.matcher(isoBlock);
+            while (urlMatcher.find()) {
+                shaByIsoUrl.put(urlMatcher.group(1), sha);
+            }
+        }
     }
 }

@@ -6,18 +6,8 @@
   <component name="ChangeListManager">
     <list default="true" id="0dd6b6fa-baf7-4322-834c-89abd3047ea0" name="Changes" comment="">
       <change beforePath="$PROJECT_DIR$/.idea/workspace.xml" beforeDir="false" afterPath="$PROJECT_DIR$/.idea/workspace.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/Downloader.class" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/Downloader.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/Settings.class" beforeDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/T2ISO$1.class" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/T2ISO$1.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/T2ISO.class" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/T2ISO.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/USB.class" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/classes/iso/USB.class" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/maven-status/maven-compiler-plugin/compile/default-compile/createdFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/maven-status/maven-compiler-plugin/compile/default-compile/inputFiles.lst" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/surefire-reports/TEST-iso.shellbridge.CommandTest.xml" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/surefire-reports/TEST-iso.shellbridge.CommandTest.xml" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/AppDir/lib/app/surefire-reports/iso.shellbridge.CommandTest.txt" beforeDir="false" afterPath="$PROJECT_DIR$/AppDir/lib/app/surefire-reports/iso.shellbridge.CommandTest.txt" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/T2ISO-x86_64.AppImage" beforeDir="false" afterPath="$PROJECT_DIR$/T2ISO-x86_64.AppImage" afterDir="false" />
+      <change beforePath="$PROJECT_DIR$/pom.xml" beforeDir="false" afterPath="$PROJECT_DIR$/pom.xml" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/Downloader.java" afterDir="false" />
-      <change beforePath="$PROJECT_DIR$/src/main/java/iso/Settings.java" beforeDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/T2ISO.java" afterDir="false" />
       <change beforePath="$PROJECT_DIR$/src/main/java/iso/USB.java" beforeDir="false" afterPath="$PROJECT_DIR$/src/main/java/iso/USB.java" afterDir="false" />
     </list>
@@ -30,7 +20,7 @@
     <execution />
   </component>
   <component name="EmbeddingIndexingInfo">
-    <option name="cachedIndexableFilesCount" value="332" />
+    <option name="cachedIndexableFilesCount" value="664" />
   </component>
   <component name="FileTemplateManagerImpl">
     <option name="RECENT_TEMPLATES">
@@ -82,7 +72,7 @@
     "RunOnceActivity.typescript.service.memoryLimit.init": "true",
     "git-widget-placeholder": "master",
     "kotlin-language-version-configured": "true",
-    "last_opened_file_path": "/home/rishon/Projects/T2Linux/iso_downloader/pom.xml",
+    "last_opened_file_path": "/home/rishon/Projects/T2Linux/manjaro-t2-kernel-edge",
     "node.js.detected.package.eslint": "true",
     "node.js.detected.package.tslint": "true",
     "node.js.selected.package.eslint": "(autodetect)",
@@ -139,7 +129,10 @@
       <workItem from="1771821842936" duration="356000" />
       <workItem from="1771822240910" duration="151000" />
       <workItem from="1771822414063" duration="140000" />
-      <workItem from="1771822568749" duration="62605000" />
+      <workItem from="1771822568749" duration="62856000" />
+      <workItem from="1771955985169" duration="1432000" />
+      <workItem from="1772047926651" duration="56000" />
+      <workItem from="1772107778511" duration="3693000" />
     </task>
     <servers />
   </component>
