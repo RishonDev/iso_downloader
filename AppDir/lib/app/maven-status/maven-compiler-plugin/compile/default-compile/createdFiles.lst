@@ -4,6 +4,7 @@ iso/shellbridge/Command.class
 iso/shellbridge/Script.class
 iso/Downloader.class
 iso/T2ISO$1.class
+iso/USB$FlashCommandResult.class
 iso/shellbridge/CommandList.class
 iso/ThemeUtil.class
 iso/USB.class

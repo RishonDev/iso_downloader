@@ -25,7 +25,7 @@
       <arg value="--input" />
       <arg value="/home/rishon/Projects/T2Linux/iso_downloader/target" />
       <arg value="--main-jar" />
-      <arg value="iso-0.2-beta.jar" />
+      <arg value="iso-0.5-beta.jar" />
       <arg value="--main-class" />
       <arg value="iso.T2ISO" />
       <arg value="--runtime-image" />
