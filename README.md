@@ -8,7 +8,7 @@ T2ISO is a desktop ISO downloader and flasher focused on T2 Linux supported dist
 
 ## Features
 
-- Download Ubuntu and Mint ISO variants from metadata
+- Download All distros with all flavours supported by the T2 Community
 - Resume/cancel download support
 - SHA-256 checksum display after download
 - Optional ISO flashing to a selected device path
@@ -29,15 +29,6 @@ mvn clean package
 ```
 
 Outputs are generated in project root and `target/`.
-
-## Release Workflow
-
-GitHub release automation triggers on version tags:
-
-```bash
-git tag v0.3
-git push origin v0.3
-```
 
 This creates a release and uploads build artifacts.
 
