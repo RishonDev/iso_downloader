@@ -21,6 +21,10 @@ public final class ThemeUtil {
 
     public static void configureLookAndFeel(Boolean forceDarkMode) {
         try {
+            if (isMacOs()) {
+                UIManager.setLookAndFeel(UIManager.getSystemLookAndFeelClassName());
+                return;
+            }
             boolean darkMode = forceDarkMode != null ? forceDarkMode : isSystemDarkMode();
             if (darkMode) {
                 FlatDarkLaf.setup();
@@ -37,14 +41,19 @@ public final class ThemeUtil {
     }
 
     private static boolean isSystemDarkMode() {
-        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
-        if (osName.contains("mac")) {
+        if (isMacOs()) {
             return isMacDarkMode();
         }
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
         if (osName.contains("win")) {
             return isWindowsDarkMode();
         }
         return isLinuxDarkMode();
+    }
+
+    private static boolean isMacOs() {
+        String osName = System.getProperty("os.name", "").toLowerCase(Locale.ROOT);
+        return osName.contains("mac");
     }
 
     private static boolean isMacDarkMode() {

@@ -161,6 +161,23 @@
                                 </configuration>
                                 <goals><goal>run</goal></goals>
                             </execution>
+                            <execution>
+                                <id>macos-zip-bundle</id>
+                                <phase>package</phase>
+                                <configuration>
+                                    <target>
+                                        <exec executable="ditto" failonerror="true">
+                                            <arg value="-c"/>
+                                            <arg value="-k"/>
+                                            <arg value="--sequesterRsrc"/>
+                                            <arg value="--keepParent"/>
+                                            <arg value="${app.name}.app"/>
+                                            <arg value="t2iso_macos.zip"/>
+                                        </exec>
+                                    </target>
+                                </configuration>
+                                <goals><goal>run</goal></goals>
+                            </execution>
                         </executions>
                     </plugin>
                 </plugins>

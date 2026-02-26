@@ -58,7 +58,7 @@ jobs:
         run: mvn -B clean package
 
       - name: Zip macOS bundle
-        run: zip -r t2iso_macos.zip T2ISO.app
+        run: ditto -c -k --sequesterRsrc --keepParent T2ISO.app t2iso_macos.zip
 
       - name: Upload macOS artifacts
         uses: actions/upload-artifact@v4
