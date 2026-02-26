@@ -166,6 +166,13 @@
                                 <phase>package</phase>
                                 <configuration>
                                     <target>
+                                        <exec executable="codesign" failonerror="true">
+                                            <arg value="--force"/>
+                                            <arg value="--deep"/>
+                                            <arg value="--sign"/>
+                                            <arg value="-"/>
+                                            <arg value="${app.name}.app"/>
+                                        </exec>
                                         <exec executable="ditto" failonerror="true">
                                             <arg value="-c"/>
                                             <arg value="-k"/>
