@@ -740,7 +740,34 @@ public class T2ISO {
         return null;
     }
 
+
+    private static void configureNativeLibraryPath() {
+        try {
+            String command = ProcessHandle.current().info().command().orElse(null);
+            if (command == null || command.isBlank()) {
+                return;
+            }
+            Path dir = Paths.get(command).toAbsolutePath().getParent();
+            if (dir == null) {
+                return;
+            }
+
+            String dirPath = dir.toString();
+            String current = System.getProperty("java.library.path", "");
+            if (current == null || current.isBlank() || ".".equals(current)) {
+                System.setProperty("java.library.path", dirPath);
+                return;
+            }
+            if (!current.contains(dirPath)) {
+                System.setProperty("java.library.path", dirPath + File.pathSeparator + current);
+            }
+        } catch (Exception ignored) {
+        }
+    }
+
     public static void main(String[] args) {
+        configureNativeLibraryPath();
+
         String javaHome = System.getProperty("java.home");
         if (javaHome == null || javaHome.isBlank()) {
             String envJavaHome = System.getenv("JAVA_HOME");
