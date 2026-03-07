@@ -23,7 +23,7 @@
       <arg value="--name" />
       <arg value="T2ISO" />
       <arg value="--input" />
-      <arg value="/home/rishon/Projects/T2Linux/iso_downloader/target" />
+      <arg value="/home/rishon/Projects/T2Linux/iso_downloader_native/target" />
       <arg value="--main-jar" />
       <arg value="iso-0.5-beta.jar" />
       <arg value="--main-class" />

@@ -1,0 +1,204 @@
+[
+  {
+    "name": "java.awt.GraphicsEnvironment",
+    "methods": [
+      {
+        "name": "isHeadless",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.lang.System",
+    "methods": [
+      {
+        "name": "load",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sun.awt.SunToolkit",
+    "methods": [
+      {
+        "name": "awtLock",
+        "parameterTypes": []
+      },
+      {
+        "name": "awtUnlock",
+        "parameterTypes": []
+      },
+      {
+        "name": "awtWait",
+        "parameterTypes": []
+      },
+      {
+        "name": "awtLockWait",
+        "parameterTypes": [
+          "long"
+        ]
+      },
+      {
+        "name": "awtLockNotify",
+        "parameterTypes": []
+      },
+      {
+        "name": "awtLockNotifyAll",
+        "parameterTypes": []
+      },
+      {
+        "name": "awtNotifyAll",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "sun.awt.UNIXToolkit"
+  },
+  {
+    "name": "sun.awt.X11.XToolkit"
+  },
+  {
+    "name": "sun.awt.X11.XErrorHandlerUtil",
+    "methods": [
+      {
+        "name": "init",
+        "parameterTypes": [
+          "long"
+        ]
+      },
+      {
+        "name": "saved_error_handler",
+        "parameterTypes": [
+          "long",
+          "long"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sun.awt.X11.XErrorHandler"
+  },
+  {
+    "name": "sun.awt.X11.XlibWrapper"
+  },
+  {
+    "name": "sun.awt.X11.XToolkitThreadBlockedHandler"
+  },
+  {
+    "name": "sun.awt.X11GraphicsEnvironment"
+  },
+  {
+    "name": "sun.awt.PlatformGraphicsInfo"
+  },
+  {
+    "name": "sun.java2d.InvalidPipeException",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "sun.java2d.InvalidPipeException$1"
+  },
+  {
+    "name": "sun.java2d.NullSurfaceData"
+  },
+  {
+    "name": "sun.java2d.SurfaceData"
+  },
+  {
+    "name": "sun.java2d.SurfaceDataProxy"
+  },
+  {
+    "name": "sun.java2d.loops.SurfaceType"
+  },
+  {
+    "name": "java.awt.image.RasterFormatException",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.awt.image.ColorModel",
+    "fields": [
+      {
+        "name": "nBits"
+      },
+      {
+        "name": "supportsAlpha"
+      },
+      {
+        "name": "isAlphaPremultiplied"
+      },
+      {
+        "name": "transparency"
+      },
+      {
+        "name": "numComponents"
+      },
+      {
+        "name": "numColorComponents"
+      },
+      {
+        "name": "pixel_bits"
+      },
+      {
+        "name": "colorSpace"
+      }
+    ]
+  },
+  {
+    "name": "java.awt.AWTError",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.awt.HeadlessException",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": []
+      }
+    ]
+  },
+  {
+    "name": "java.lang.UnsatisfiedLinkError",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  },
+  {
+    "name": "java.lang.InternalError",
+    "methods": [
+      {
+        "name": "<init>",
+        "parameterTypes": [
+          "java.lang.String"
+        ]
+      }
+    ]
+  }
+]

@@ -32,6 +32,20 @@ Outputs are generated in project root and `target/`.
 
 This creates a release and uploads build artifacts.
 
+## Native Image Metadata (Swing/AWT)
+
+If native image fails at runtime with missing JNI classes/methods, regenerate metadata with the agent:
+
+```bash
+./native/generate-agent-config.sh
+```
+
+Then rebuild the native binary:
+
+```bash
+mvn -q -f native/pom_native.xml -DskipTests package
+```
+
 ## Notes
 
 - macOS icon is copied automatically from `packaging/macos/icon.icns` into `T2ISO.app/Contents/Resources/T2ISO.icns` during packaging on macOS.

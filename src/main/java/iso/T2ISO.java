@@ -19,7 +19,9 @@ import javax.swing.SwingConstants;
 import javax.swing.SwingUtilities;
 import java.awt.GridBagConstraints;
 import java.awt.GridBagLayout;
+import java.awt.GraphicsEnvironment;
 import java.awt.Insets;
+import java.awt.AWTError;
 import java.awt.event.MouseAdapter;
 import java.awt.event.MouseEvent;
 import java.io.File;
@@ -121,7 +123,8 @@ public class T2ISO {
     }
 
     private boolean getBool(String key) {
-        String defaultValue = "verifyIso".equals(key) ? "true" : "false";
+        String defaultValue =
+                ("verifyIso".equals(key) || "enableAutoMerge".equals(key)) ? "true" : "false";
         return Boolean.parseBoolean(settings.getProperty(key, defaultValue));
     }
 
@@ -738,6 +741,23 @@ public class T2ISO {
     }
 
     public static void main(String[] args) {
-        SwingUtilities.invokeLater(() -> new T2ISO().start());
+        String javaHome = System.getProperty("java.home");
+        if (javaHome == null || javaHome.isBlank()) {
+            String envJavaHome = System.getenv("JAVA_HOME");
+            if (envJavaHome != null && !envJavaHome.isBlank()) {
+                System.setProperty("java.home", envJavaHome);
+            }
+        }
+        if (GraphicsEnvironment.isHeadless()) {
+            System.err.println("No graphical display detected. Set DISPLAY or run in a desktop session.");
+            System.exit(1);
+            return;
+        }
+        try {
+            SwingUtilities.invokeLater(() -> new T2ISO().start());
+        } catch (AWTError e) {
+            System.err.println("Unable to start GUI: " + e.getMessage());
+            System.exit(1);
+        }
     }
 }
