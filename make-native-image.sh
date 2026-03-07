@@ -13,16 +13,27 @@ if ! command -v mvn >/dev/null 2>&1; then
 fi
 
 if [[ -z "${JAVA_HOME:-}" || ! -x "${JAVA_HOME}/bin/java" ]]; then
+  # Best-effort auto-detect on macOS.
+  if [[ "$(uname -s)" == "Darwin" ]] && command -v /usr/libexec/java_home >/dev/null 2>&1; then
+    JAVA_HOME="$(/usr/libexec/java_home 2>/dev/null || true)"
+    export JAVA_HOME
+  fi
+fi
+
+if [[ -z "${JAVA_HOME:-}" || ! -x "${JAVA_HOME}/bin/java" ]]; then
   echo "JAVA_HOME must point to a GraalVM JDK." >&2
-  echo "Example:" >&2
+  echo "Example (Linux):" >&2
   echo "  export JAVA_HOME=/usr/lib/jvm/java-25-graalvm" >&2
+  echo "  export PATH=\$JAVA_HOME/bin:\$PATH" >&2
+  echo "Example (macOS):" >&2
+  echo "  export JAVA_HOME=\$(/usr/libexec/java_home)" >&2
   echo "  export PATH=\$JAVA_HOME/bin:\$PATH" >&2
   exit 1
 fi
 
-if ! java -version 2>&1 | grep -qi "GraalVM"; then
+if ! "${JAVA_HOME}/bin/java" -version 2>&1 | grep -qi "GraalVM"; then
   echo "Current java is not GraalVM. Please switch JAVA_HOME." >&2
-  java -version >&2
+  "${JAVA_HOME}/bin/java" -version >&2
   exit 1
 fi
 

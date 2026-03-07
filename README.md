@@ -46,6 +46,23 @@ Then rebuild the native binary:
 mvn -q -f native/pom_native.xml -DskipTests package
 ```
 
+## Native Image Build Scripts
+
+- Linux/macOS:
+```bash
+./make-native-image.sh
+```
+
+- Windows (PowerShell):
+```powershell
+.\make-native-image.ps1
+```
+
+- Windows (cmd.exe):
+```bat
+make-native-image.cmd
+```
+
 ## Notes
 
 - macOS icon is copied automatically from `packaging/macos/icon.icns` into `T2ISO.app/Contents/Resources/T2ISO.icns` during packaging on macOS.
