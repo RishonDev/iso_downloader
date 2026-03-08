@@ -5,17 +5,17 @@
 
     <groupId>t2linux</groupId>
     <artifactId>iso-native</artifactId>
-    <version>0.2-beta</version>
+    <version>0.7</version>
     <packaging>jar</packaging>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <main.class>iso.T2ISO</main.class>
+        <main.class>iso.Main</main.class>
         <native.image.name>T2ISO-native</native.image.name>
         <native.maven.plugin.version>0.10.3</native.maven.plugin.version>
-        <flatlaf.version>3.7</flatlaf.version>
-        <native.init.at.runtime>java.awt.Toolkit,javax.swing.UIManager</native.init.at.runtime>
+        <javafx.version>21.0.6</javafx.version>
+        <skip.native.strip>false</skip.native.strip>
     </properties>
 
     <build>
@@ -57,11 +57,11 @@
                     <verbose>true</verbose>
                     <buildArgs>
                         <buildArg>--no-fallback</buildArg>
+                        <buildArg>-Os</buildArg>
                         <buildArg>--enable-url-protocols=http,https</buildArg>
-                        <buildArg>--report-unsupported-elements-at-runtime</buildArg>
-                        <buildArg>--initialize-at-run-time=${native.init.at.runtime}</buildArg>
-                        <buildArg>-H:+ReportExceptionStackTraces</buildArg>
-                        <buildArg>-H:+AddAllCharsets</buildArg>
+                        <buildArg>--initialize-at-run-time=javafx.application.Platform</buildArg>
+                        <buildArg>-H:IncludeLocales=en</buildArg>
+                        <!-- old size-heavy option kept for reference: <buildArg>-H:+AddAllCharsets</buildArg> -->
                     </buildArgs>
                 </configuration>
                 <executions>
@@ -74,14 +74,58 @@
                     </execution>
                 </executions>
             </plugin>
+
+            <plugin>
+                <groupId>org.apache.maven.plugins</groupId>
+                <artifactId>maven-antrun-plugin</artifactId>
+                <version>3.1.0</version>
+                <executions>
+                    <execution>
+                        <id>strip-native-artifacts</id>
+                        <phase>package</phase>
+                        <configuration>
+                            <skip>${skip.native.strip}</skip>
+                            <target>
+                                <exec executable="sh" failonerror="false" resultproperty="native.strip.exit.code">
+                                    <arg value="-c"/>
+                                    <arg value="if command -v strip >/dev/null 2&gt;&amp;1; then if [ -f '${project.build.directory}/${native.image.name}' ]; then strip --strip-all '${project.build.directory}/${native.image.name}' || true; fi; find '${project.build.directory}' -maxdepth 1 -type f \\( -name '*.so' -o -name '*.dylib' \\) -exec strip --strip-unneeded {} + || true; fi"/>
+                                </exec>
+                                <echo>strip step exit code: ${native.strip.exit.code}</echo>
+                            </target>
+                        </configuration>
+                        <goals><goal>run</goal></goals>
+                    </execution>
+                </executions>
+            </plugin>
         </plugins>
     </build>
 
     <dependencies>
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>${flatlaf.version}</version>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jfxtras</groupId>
+            <artifactId>jmetro</artifactId>
+            <version>11.6.16</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>atlantafx-base</artifactId>
+            <version>2.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -90,26 +134,4 @@
             <scope>test</scope>
         </dependency>
     </dependencies>
-
-    <profiles>
-        <profile>
-            <id>linux-x11-runtime-init</id>
-            <activation>
-                <os><name>Linux</name></os>
-            </activation>
-            <properties>
-                <native.init.at.runtime>sun.awt.X11.XToolkit,java.awt.Toolkit,javax.swing.UIManager</native.init.at.runtime>
-            </properties>
-        </profile>
-    
-        <profile>
-            <id>windows-runtime-init</id>
-            <activation>
-                <os><family>Windows</family></os>
-            </activation>
-            <properties>
-                <native.init.at.runtime>sun.awt.windows.WToolkit,java.awt.Toolkit,javax.swing.UIManager</native.init.at.runtime>
-            </properties>
-        </profile>
-    </profiles>
 </project>

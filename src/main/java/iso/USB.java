@@ -1,13 +1,17 @@
 package iso;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JPasswordField;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
-import java.io.BufferedWriter;
-import java.io.BufferedReader;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Dialog;
+import javafx.scene.control.Label;
+import javafx.scene.control.PasswordField;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.ProgressIndicator;
+
 import java.io.BufferedInputStream;
+import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
@@ -17,15 +21,17 @@ import java.net.URI;
 import java.net.URL;
 import java.nio.charset.StandardCharsets;
 import java.security.MessageDigest;
-import java.util.Arrays;
-import java.util.ArrayList;
 import java.util.ArrayDeque;
+import java.util.ArrayList;
+import java.util.Arrays;
 import java.util.Deque;
 import java.util.List;
 import java.util.Locale;
+import java.util.Optional;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.zip.ZipEntry;
 import java.util.zip.ZipInputStream;
 
@@ -37,12 +43,14 @@ public class USB {
     private static final int COPY_BUFFER_SIZE = 64 * 1024;
     private static final int OUTPUT_TAIL_LINES = 8;
     private static final long FLASH_UI_UPDATE_INTERVAL_MS = 120L;
+
     private volatile long lastFlashUiUpdateMs = 0L;
     private volatile int lastFlashPercent = -1;
 
     private boolean isMac() {
         return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("mac");
     }
+
     private boolean isWindows() {
         return System.getProperty("os.name").toLowerCase(Locale.ROOT).contains("win");
     }
@@ -51,77 +59,49 @@ public class USB {
         if (isMac()) {
             ProcessBuilder pb = new ProcessBuilder("df", "-P", mountPoint);
             Process process = pb.start();
-
             try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
-                reader.readLine(); // skip header
+                reader.readLine();
                 String line = reader.readLine();
                 process.waitFor();
-
-                if (line == null || line.isBlank()) {
+                if (line == null || line.isBlank())
                     throw new RuntimeException("Could not resolve device for mount point: " + mountPoint);
-                }
-
                 String[] parts = line.trim().split("\\s+");
-                if (parts.length == 0 || parts[0].isBlank()) {
+                if (parts.length == 0 || parts[0].isBlank())
                     throw new RuntimeException("Could not resolve device for mount point: " + mountPoint);
-                }
                 return parts[0].trim().replaceFirst("^/dev/r", "/dev/");
             }
         }
 
-        ProcessBuilder pb = new ProcessBuilder(
-                "findmnt",
-                "-n",
-                "-o",
-                "SOURCE",
-                "--target",
-                mountPoint
-        );
+        ProcessBuilder pb = new ProcessBuilder("findmnt", "-n", "-o", "SOURCE", "--target", mountPoint);
 
         Process process = pb.start();
         BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String device = reader.readLine();
         process.waitFor();
 
-        if (device == null || device.isBlank()) {
+        if (device == null || device.isBlank())
             throw new RuntimeException("Could not resolve device for mount point: " + mountPoint);
-        }
         return device.trim();
     }
 
     public String getParentDisk(String partition) throws Exception {
         if (isMac()) {
-            Matcher m = MAC_PARTITION_PATTERN.matcher(partition.trim());
-            if (m.matches()) {
-                return "/dev/r" + m.group(1);
-            }
-            if (partition.startsWith("/dev/disk") || partition.startsWith("/dev/rdisk")) {
-                return partition.startsWith("/dev/r") ? partition : partition.replace("/dev/", "/dev/r");
-            }
+            String trimmed = partition.trim();
+            Matcher m = MAC_PARTITION_PATTERN.matcher(trimmed);
+            if (m.matches()) return "/dev/r" + m.group(1);
+            Matcher extended = Pattern.compile("^/dev/r?(disk\\d+)(?:s\\d+.*)?$").matcher(trimmed);
+            if (extended.matches()) return "/dev/r" + extended.group(1);
+            if (trimmed.startsWith("/dev/disk") || trimmed.startsWith("/dev/rdisk"))
+                return trimmed.startsWith("/dev/r") ? trimmed : trimmed.replace("/dev/", "/dev/r");
             throw new RuntimeException("Could not resolve parent disk");
         }
 
-        ProcessBuilder pb = new ProcessBuilder(
-                "lsblk",
-                "-no",
-                "PKNAME",
-                partition
-        );
-
+        ProcessBuilder pb = new ProcessBuilder("lsblk", "-no", "PKNAME", partition);
         Process process = pb.start();
-
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream())
-        );
-
+        BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()));
         String parent = reader.readLine();
-
         process.waitFor();
-
-        if (parent == null || parent.isBlank()) {
-            throw new RuntimeException("Could not resolve parent disk");
-        }
-
+        if (parent == null || parent.isBlank()) throw new RuntimeException("Could not resolve parent disk");
         return "/dev/" + parent.trim();
     }
 
@@ -129,15 +109,48 @@ public class USB {
         return getParentDisk(partition);
     }
 
-    public  void flash(
-            String isoPath,
-            String devicePath,
-            long totalBytes,
-            JProgressBar progressBar,
-            JLabel statusLabel,
-            boolean verifyUsb,
-            String expectedIsoSha256
-    ) {
+    public boolean isProtectedSystemDevice(String devicePath) {
+        if (devicePath == null || devicePath.isBlank()) return false;
+        String candidate = normalizeDevicePath(devicePath);
+        if (!candidate.startsWith("/dev/")) return false;
+
+        String[] protectedMounts = {"/", "/boot", "/boot/efi", "/System/Volumes/Data"};
+        for (String mountPoint : protectedMounts) {
+            try {
+                String source = normalizeDevicePath(getDF(mountPoint));
+                if (source == null || source.isBlank()) continue;
+                if (sameDeviceOrDisk(candidate, source)) return true;
+            } catch (Exception ignored) {
+            }
+        }
+        return false;
+    }
+
+    private boolean sameDeviceOrDisk(String a, String b) {
+        if (a.equals(b)) return true;
+        String aParent = safeParent(a);
+        String bParent = safeParent(b);
+        if (aParent != null && aParent.equals(b)) return true;
+        if (bParent != null && bParent.equals(a)) return true;
+        return aParent != null && bParent != null && aParent.equals(bParent);
+    }
+
+    private String safeParent(String device) {
+        try {return normalizeDevicePath(getParentDirectory(device));}
+        catch (Exception ignored) {return null;}
+    }
+
+    private String normalizeDevicePath(String device) {
+        String normalized = device.trim();
+        if (normalized.startsWith("/dev/rdisk"))
+            normalized = normalized.replace("/dev/rdisk", "/dev/disk");
+        else if (normalized.startsWith("/dev/r"))
+            normalized = normalized.replaceFirst("^/dev/r", "/dev/");
+        return normalized;
+    }
+
+    public void flash(String isoPath, String devicePath, long totalBytes, ProgressBar progressBar, Label statusLabel, boolean verifyUsb,
+            String expectedIsoSha256) {
 
         new Thread(() -> {
             char[] sudoPassword = null;
@@ -145,38 +158,30 @@ public class USB {
                 if (!isWindows()) {
                     sudoPassword = promptForSudoPassword();
                     if (sudoPassword == null || sudoPassword.length == 0) {
-                        SwingUtilities.invokeLater(() -> statusLabel.setText("Flash cancelled"));
+                        Platform.runLater(() -> statusLabel.setText("Flash cancelled"));
                         return;
                     }
                 }
 
-                // Enable progress display
-                Runnable initFlashUi = () -> {
+                runOnFxAndWait(() -> {
                     lastFlashUiUpdateMs = 0L;
                     lastFlashPercent = -1;
-                    progressBar.setMinimum(0);
-                    progressBar.setMaximum(100);
-                    progressBar.setValue(0);
-                    progressBar.setIndeterminate(true);
+                    progressBar.setProgress(0);
+                    progressBar.setProgress(ProgressIndicator.INDETERMINATE_PROGRESS);
                     statusLabel.setText("Starting flash...");
-                };
-                if (SwingUtilities.isEventDispatchThread()) {
-                    initFlashUi.run();
-                } else {
-                    SwingUtilities.invokeAndWait(initFlashUi);
-                }
+                });
 
                 List<String> cmd = new ArrayList<>();
                 if (isWindows()) {
-                    SwingUtilities.invokeLater(() ->
+                    Platform.runLater(() ->
                             statusLabel.setText("Preparing flasher tool (may download once)..."));
                     String ddExe = resolveWindowsDdExecutable(statusLabel);
                     if (ddExe.toLowerCase(Locale.ROOT).contains("busybox")) {
                         cmd.add(ddExe);
                         cmd.add("dd");
-                    } else {
+                    } else
                         cmd.add(ddExe);
-                    }
+
                     cmd.add("if=" + isoPath);
                     cmd.add("of=" + devicePath);
                     cmd.add("bs=4M");
@@ -205,108 +210,89 @@ public class USB {
                         && containsStatusProgressError(result.outputTail)) {
                     List<String> fallbackCmd = new ArrayList<>(cmd);
                     fallbackCmd.removeIf(arg -> "status=progress".equals(arg));
-                    SwingUtilities.invokeLater(() -> statusLabel.setText("Retrying flash without progress flag..."));
+                    Platform.runLater(() -> statusLabel.setText("Retrying flash without progress flag..."));
                     result = runFlashCommand(fallbackCmd, sudoPassword, totalBytes, progressBar, statusLabel);
                 }
 
                 if (result.exit != 0) {
                     String err = result.outputTail.isBlank() ? "Flash failed (exit " + result.exit + ")"
                             : "Flash failed: " + result.outputTail;
-                    SwingUtilities.invokeLater(() -> statusLabel.setText(err));
+                    Platform.runLater(() -> statusLabel.setText(err));
                     return;
                 }
 
                 if (verifyUsb) {
-                    SwingUtilities.invokeLater(() -> statusLabel.setText("Verifying USB..."));
+                    Platform.runLater(() -> statusLabel.setText("Verifying USB..."));
                     String expectedSha = expectedIsoSha256;
-                    if (expectedSha == null || expectedSha.isBlank()) {
-                        expectedSha = sha256File(isoPath);
-                    }
+                    if (expectedSha == null || expectedSha.isBlank()) expectedSha = sha256File(isoPath);
                     String usbSha = computeDeviceSha256(devicePath, totalBytes, sudoPassword);
                     if (usbSha == null || usbSha.isBlank()) {
-                        SwingUtilities.invokeLater(() -> statusLabel.setText("USB verify failed: no checksum output"));
+                        Platform.runLater(() -> statusLabel.setText("USB verify failed: no checksum output"));
                         return;
                     }
                     if (!usbSha.equalsIgnoreCase(expectedSha)) {
-                        SwingUtilities.invokeLater(() -> statusLabel.setText("USB verify failed: checksum mismatch"));
+                        Platform.runLater(() -> statusLabel.setText("USB verify failed: checksum mismatch"));
                         return;
                     }
                 }
 
                 if (!result.hasByteProgress) {
-                    SwingUtilities.invokeLater(() ->
+                    Platform.runLater(() ->
                             statusLabel.setText("Finalizing flash..."));
                 }
 
-                SwingUtilities.invokeLater(() -> {
-                    progressBar.setIndeterminate(false);
-                    progressBar.setValue(100);
+                Platform.runLater(() -> {
+                    progressBar.setProgress(1.0);
                     statusLabel.setText("Flash complete");
                 });
 
             } catch (Exception e) {
-                SwingUtilities.invokeLater(() ->
+                Platform.runLater(() ->
                         {
-                            progressBar.setIndeterminate(false);
+                            progressBar.setProgress(0);
                             statusLabel.setText("Flash failed: " + e.getMessage());
                         }
                 );
             } finally {
-                if (sudoPassword != null) {
-                    Arrays.fill(sudoPassword, '\0');
-                }
+                if (sudoPassword != null) Arrays.fill(sudoPassword, '\0');
             }
         }).start();
     }
 
-    private char[] promptForSudoPassword() throws Exception {
+    private char[] promptForSudoPassword() {
         AtomicReference<char[]> passwordRef = new AtomicReference<>();
-        Runnable showPrompt = () -> {
-            JPasswordField passwordField = new JPasswordField(20);
-            int option = JOptionPane.showConfirmDialog(
-                    null,
-                    passwordField,
-                    "Enter sudo password to flash USB",
-                    JOptionPane.OK_CANCEL_OPTION,
-                    JOptionPane.PLAIN_MESSAGE
-            );
-            if (option == JOptionPane.OK_OPTION) {
-                passwordRef.set(passwordField.getPassword());
-            } else {
+        runOnFxAndWait(() -> {
+            Dialog<ButtonType> dialog = new Dialog<>();
+            dialog.setTitle("Sudo Authentication");
+            dialog.setHeaderText("Enter sudo password to flash USB");
+            PasswordField passwordField = new PasswordField();
+            passwordField.setPromptText("Password");
+            dialog.getDialogPane().setContent(passwordField);
+            dialog.getDialogPane().getButtonTypes().addAll(ButtonType.OK, ButtonType.CANCEL);
+
+            Optional<ButtonType> option = dialog.showAndWait();
+            if (option.isPresent() && option.get() == ButtonType.OK)
+                passwordRef.set(passwordField.getText().toCharArray());
+            else
                 passwordRef.set(null);
-            }
-        };
-
-        if (SwingUtilities.isEventDispatchThread()) {
-            showPrompt.run();
-        } else {
-            SwingUtilities.invokeAndWait(showPrompt);
-        }
-
+        });
         return passwordRef.get();
     }
 
-    private synchronized boolean updateProgressFromLine(String line,
-                                                        long totalBytes,
-                                                        JProgressBar progressBar,
-                                                        JLabel statusLabel) {
+    private synchronized boolean updateProgressFromLine(String line, long totalBytes, ProgressBar progressBar, Label statusLabel) {
         Matcher m = DD_BYTES_PATTERN.matcher(line);
-        if (!m.matches() || totalBytes <= 0) {
-            return false;
-        }
+        if (!m.matches() || totalBytes <= 0) return false;
         try {
             long bytes = Long.parseLong(m.group(1));
             int percent = (int) Math.max(0, Math.min(100, (bytes * 100) / totalBytes));
             long now = System.currentTimeMillis();
             boolean shouldUpdate = percent != lastFlashPercent
                     && (now - lastFlashUiUpdateMs >= FLASH_UI_UPDATE_INTERVAL_MS || percent == 100);
-            if (!shouldUpdate) {
-                return true;
-            }
+            if (!shouldUpdate) return true;
             lastFlashUiUpdateMs = now;
             lastFlashPercent = percent;
-            SwingUtilities.invokeLater(() -> {
-                progressBar.setValue(percent);
+            Platform.runLater(() -> {
+                progressBar.setProgress(percent / 100.0);
                 statusLabel.setText("Flashing... " + percent + "%");
             });
             return true;
@@ -315,11 +301,7 @@ public class USB {
         }
     }
 
-    private FlashCommandResult runFlashCommand(List<String> cmd,
-                                               char[] sudoPassword,
-                                               long totalBytes,
-                                               JProgressBar progressBar,
-                                               JLabel statusLabel) throws Exception {
+    private FlashCommandResult runFlashCommand(List<String> cmd, char[] sudoPassword, long totalBytes, ProgressBar progressBar, Label statusLabel) throws Exception {
         ProcessBuilder pb = new ProcessBuilder(cmd);
         pb.redirectErrorStream(true);
 
@@ -344,9 +326,8 @@ public class USB {
                 if (c == '\r' || c == '\n') {
                     line = chunk.toString().trim();
                     if (!line.isEmpty()) {
-                        if (updateProgressFromLine(line, totalBytes, progressBar, statusLabel)) {
+                        if (updateProgressFromLine(line, totalBytes, progressBar, statusLabel))
                             hasByteProgress = true;
-                        }
                         outputTail.addLast(line);
                         while (outputTail.size() > OUTPUT_TAIL_LINES) {
                             outputTail.removeFirst();
@@ -361,9 +342,8 @@ public class USB {
 
         line = chunk.toString().trim();
         if (!line.isEmpty()) {
-            if (updateProgressFromLine(line, totalBytes, progressBar, statusLabel)) {
+            if (updateProgressFromLine(line, totalBytes, progressBar, statusLabel))
                 hasByteProgress = true;
-            }
             outputTail.addLast(line);
             while (outputTail.size() > OUTPUT_TAIL_LINES) {
                 outputTail.removeFirst();
@@ -384,8 +364,9 @@ public class USB {
     }
 
     private String computeDeviceSha256(String devicePath, long totalBytes, char[] sudoPassword) throws Exception {
-        if (isWindows()) {
-            throw new RuntimeException("USB verification is not supported on Windows");
+        if (isWindows()){
+            System.out.println("Verifying ISO is not supported on Windows, skipping.");
+            return "";
         }
         String hashCmd;
         if (isMac()) {
@@ -412,9 +393,7 @@ public class USB {
             output = reader.readLine();
         }
         process.waitFor();
-        if (process.exitValue() != 0 || output == null) {
-            throw new RuntimeException("Could not verify USB contents");
-        }
+        if (process.exitValue() != 0 || output == null) throw new RuntimeException("Could not verify USB contents");
         String[] parts = output.trim().split("\\s+");
         return parts.length == 0 ? null : parts[0].trim().toLowerCase(Locale.ROOT);
     }
@@ -451,35 +430,32 @@ public class USB {
         }
     }
 
-    private String resolveWindowsDdExecutable(JLabel statusLabel) throws Exception {
+    private String resolveWindowsDdExecutable(Label statusLabel) throws Exception {
         String env = System.getenv("ISO_DD_EXE");
-        if (env != null && !env.isBlank() && new File(env).exists()) {
-            return env;
-        }
+        if (env != null && !env.isBlank() && new File(env).exists()) return env;
 
         String[] pathCandidates = {"dd.exe", "busybox.exe", "busybox64.exe"};
         for (String candidate : pathCandidates) {
-            if (isCommandAvailable(candidate)) {
-                return candidate;
-            }
+            if (isCommandAvailable(candidate)) return candidate;
         }
 
         File isoDir = new File(System.getProperty("user.home"), ".iso");
         if (!isoDir.exists()) {
-            isoDir.mkdirs();
+            boolean created = isoDir.mkdirs();
+            if (!created && !isoDir.exists())
+                throw new RuntimeException("Could not create directory: " + isoDir.getAbsolutePath());
         }
 
         File localDd = new File(isoDir, "dd.exe");
         if (!localDd.exists()) {
             try {
-                SwingUtilities.invokeLater(() ->
+                Platform.runLater(() ->
                         statusLabel.setText("Downloading Windows flasher tool..."));
                 downloadWindowsDd(localDd, WINDOWS_DD_PRIMARY_URL);
             } catch (Exception primaryError) {
-                // Fallback: busybox dd-compatible binary.
                 File fallbackBusybox = new File(isoDir, "busybox64.exe");
                 if (!fallbackBusybox.exists()) {
-                    SwingUtilities.invokeLater(() ->
+                    Platform.runLater(() ->
                             statusLabel.setText("Primary tool failed, downloading fallback..."));
                     downloadWindowsDd(fallbackBusybox, WINDOWS_DD_FALLBACK_URL);
                 }
@@ -487,9 +463,7 @@ public class USB {
             }
         }
 
-        if (!localDd.exists()) {
-            throw new RuntimeException("Could not find/download Windows dd tool");
-        }
+        if (!localDd.exists()) throw new RuntimeException("Could not find/download Windows dd tool");
 
         return localDd.getAbsolutePath();
     }
@@ -531,14 +505,10 @@ public class USB {
              ZipInputStream zipIn = new ZipInputStream(in)) {
             ZipEntry entry;
             while ((entry = zipIn.getNextEntry()) != null) {
-                if (entry.isDirectory()) {
-                    continue;
-                }
+                if (entry.isDirectory()) continue;
 
                 String entryName = new File(entry.getName()).getName().toLowerCase(Locale.ROOT);
-                if (!entryName.endsWith(".exe")) {
-                    continue;
-                }
+                if (!entryName.endsWith(".exe")) continue;
 
                 try (FileOutputStream out = new FileOutputStream(destination)) {
                     byte[] buffer = new byte[COPY_BUFFER_SIZE];
@@ -553,9 +523,27 @@ public class USB {
         } catch (IOException e) {
             throw new RuntimeException("Failed to download Windows dd tool", e);
         }
+        if (!extracted) throw new RuntimeException("Windows dd zip did not contain an .exe binary");
+    }
 
-        if (!extracted) {
-            throw new RuntimeException("Windows dd zip did not contain an .exe binary");
+    private static void runOnFxAndWait(Runnable action) {
+        if (Platform.isFxApplicationThread()) {
+            action.run();
+            return;
+        }
+
+        CountDownLatch latch = new CountDownLatch(1);
+        Platform.runLater(() -> {
+            try {action.run();}
+            finally {latch.countDown();}
+        });
+
+        try {
+            latch.await();
+        } catch (InterruptedException e) {
+            Thread.currentThread().interrupt();
+            Alert alert = new Alert(Alert.AlertType.ERROR, "Operation interrupted", ButtonType.OK);
+            Platform.runLater(alert::showAndWait);
         }
     }
 }

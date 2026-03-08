@@ -30,15 +30,18 @@ public class Command {
      * Enables you to run commands while returning an exception if an error occurs.
      * This lets you ***/
     public void exec() throws IOException, InterruptedException {
-        output = "";
+        StringBuilder outputBuilder = new StringBuilder();
         ProcessBuilder pb = new ProcessBuilder("sh", "-lc", command);
         pb.redirectErrorStream(true);
         Process process = pb.start();
-        BufferedReader reader = new BufferedReader(
-                new InputStreamReader(process.getInputStream()));
-        String line;
-        while ((line = reader.readLine()) != null) output += (line + "\n");
+        try (BufferedReader reader = new BufferedReader(new InputStreamReader(process.getInputStream()))) {
+            String line;
+            while ((line = reader.readLine()) != null) {
+                outputBuilder.append(line).append('\n');
+            }
+        }
         process.waitFor();
+        output = outputBuilder.toString();
     }
     /***
      * Enables you to run the command. You do not need to add
@@ -58,9 +61,7 @@ public class Command {
         return output;
     }
     public String[] getOutputArray(){
-        if (output.isBlank()) {
-            return new String[0];
-        }
+        if (output.isBlank()) return new String[0];
         return output.split("\n");
     }
 }

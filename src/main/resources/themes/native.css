@@ -1,0 +1,29 @@
+.root {
+    -fx-font-size: 13px;
+}
+
+.root.platform-mac {
+    -fx-font-family: ".AppleSystemUIFont";
+}
+
+.root.platform-windows {
+    -fx-font-family: "Segoe UI";
+}
+
+.root.platform-linux {
+    -fx-font-family: "Noto Sans", "Ubuntu", "Cantarell", sans-serif;
+}
+
+.label#statusLabel,
+.label#partLabel {
+    -fx-font-weight: 600;
+}
+
+.menu-bar,
+.context-menu {
+    -fx-background-insets: 0;
+}
+
+.progress-bar > .bar {
+    -fx-background-radius: 999;
+}

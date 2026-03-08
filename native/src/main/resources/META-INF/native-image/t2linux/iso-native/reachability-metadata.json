@@ -93,17 +93,6 @@
       ]
     },
     {
-      "type": "com.formdev.flatlaf.ui.FlatPanelUI",
-      "methods": [
-        {
-          "name": "createUI",
-          "parameterTypes": [
-            "javax.swing.JComponent"
-          ]
-        }
-      ]
-    },
-    {
       "type": "com.formdev.flatlaf.ui.FlatPopupMenuBorder",
       "methods": [
         {
@@ -114,17 +103,6 @@
     },
     {
       "type": "com.formdev.flatlaf.ui.FlatPopupMenuUI",
-      "methods": [
-        {
-          "name": "createUI",
-          "parameterTypes": [
-            "javax.swing.JComponent"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "com.formdev.flatlaf.ui.FlatRootPaneUI",
       "methods": [
         {
           "name": "createUI",
@@ -233,18 +211,6 @@
       "type": "com.sun.swing.internal.plaf.metal.resources.metal"
     },
     {
-      "type": "java.awt.AWTError",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
       "type": "java.awt.AlphaComposite",
       "jniAccessible": true,
       "fields": [
@@ -325,16 +291,6 @@
         },
         {
           "name": "isHeadless",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.awt.HeadlessException",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
           "parameterTypes": []
         }
       ]
@@ -461,9 +417,6 @@
     },
     {
       "type": "java.awt.event.MouseMotionListener[]"
-    },
-    {
-      "type": "java.awt.event.WindowFocusListener[]"
     },
     {
       "type": "java.awt.geom.AffineTransform",
@@ -607,13 +560,7 @@
           "name": "nBits"
         },
         {
-          "name": "numColorComponents"
-        },
-        {
           "name": "numComponents"
-        },
-        {
-          "name": "pixel_bits"
         },
         {
           "name": "supportsAlpha"
@@ -664,35 +611,11 @@
       ]
     },
     {
-      "type": "java.awt.image.RasterFormatException",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
       "type": "java.lang.Boolean",
       "jniAccessible": true,
       "methods": [
         {
           "name": "getBoolean",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "java.lang.InternalError",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
           "parameterTypes": [
             "java.lang.String"
           ]
@@ -712,28 +635,6 @@
       ]
     },
     {
-      "type": "java.lang.Thread",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "yield",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "java.lang.UnsatisfiedLinkError",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
       "type": "java.security.AlgorithmParametersSpi"
     },
     {
@@ -744,21 +645,6 @@
     },
     {
       "type": "java.security.interfaces.RSAPublicKey"
-    },
-    {
-      "type": "javax.swing.PopupFactory",
-      "methods": [
-        {
-          "name": "getPopup",
-          "parameterTypes": [
-            "java.awt.Component",
-            "java.awt.Component",
-            "int",
-            "int",
-            "boolean"
-          ]
-        }
-      ]
     },
     {
       "type": "javax.swing.plaf.basic.BasicGraphicsUtils",
@@ -816,12 +702,6 @@
           "name": "createUI",
           "parameterTypes": [
             "javax.swing.JComponent"
-          ]
-        },
-        {
-          "name": "loadActionMap",
-          "parameterTypes": [
-            "javax.swing.plaf.basic.LazyActionMap"
           ]
         }
       ]
@@ -937,9 +817,6 @@
       ]
     },
     {
-      "type": "sun.awt.PlatformGraphicsInfo"
-    },
-    {
       "type": "sun.awt.SunHints",
       "jniAccessible": true,
       "fields": [
@@ -971,21 +848,10 @@
           ]
         },
         {
-          "name": "awtNotifyAll",
-          "parameterTypes": []
-        },
-        {
           "name": "awtUnlock",
-          "parameterTypes": []
-        },
-        {
-          "name": "awtWait",
           "parameterTypes": []
         }
       ]
-    },
-    {
-      "type": "sun.awt.UNIXToolkit"
     },
     {
       "type": "sun.awt.X11.XBaseWindow",
@@ -1006,22 +872,12 @@
       "type": "sun.awt.X11.XContentWindow"
     },
     {
-      "type": "sun.awt.X11.XErrorHandler"
-    },
-    {
       "type": "sun.awt.X11.XErrorHandlerUtil",
       "jniAccessible": true,
       "methods": [
         {
           "name": "init",
           "parameterTypes": [
-            "long"
-          ]
-        },
-        {
-          "name": "saved_error_handler",
-          "parameterTypes": [
-            "long",
             "long"
           ]
         }
@@ -1043,9 +899,6 @@
       ]
     },
     {
-      "type": "sun.awt.X11.XToolkitThreadBlockedHandler"
-    },
-    {
       "type": "sun.awt.X11.XWindow",
       "jniAccessible": true,
       "fields": [
@@ -1059,12 +912,6 @@
           "name": "target"
         }
       ]
-    },
-    {
-      "type": "sun.awt.X11.XWindowPeer"
-    },
-    {
-      "type": "sun.awt.X11.XlibWrapper"
     },
     {
       "type": "sun.awt.X11GraphicsConfig",
@@ -1089,9 +936,6 @@
           ]
         }
       ]
-    },
-    {
-      "type": "sun.awt.X11GraphicsEnvironment"
     },
     {
       "type": "sun.awt.X11InputMethodBase",
@@ -1160,60 +1004,6 @@
           "parameterTypes": [
             "int"
           ]
-        }
-      ]
-    },
-    {
-      "type": "sun.font.FontConfigManager$FcCompFont",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "allFonts"
-        },
-        {
-          "name": "fcName"
-        },
-        {
-          "name": "firstFont"
-        }
-      ]
-    },
-    {
-      "type": "sun.font.FontConfigManager$FontConfigFont",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "familyName"
-        },
-        {
-          "name": "fontFile"
-        },
-        {
-          "name": "fullName"
-        },
-        {
-          "name": "styleStr"
-        }
-      ],
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": []
-        }
-      ]
-    },
-    {
-      "type": "sun.font.FontConfigManager$FontConfigFont[]"
-    },
-    {
-      "type": "sun.font.FontConfigManager$FontConfigInfo",
-      "jniAccessible": true,
-      "fields": [
-        {
-          "name": "cacheDirs"
-        },
-        {
-          "name": "fcVersion"
         }
       ]
     },
@@ -1373,18 +1163,7 @@
     },
     {
       "type": "sun.java2d.InvalidPipeException",
-      "jniAccessible": true,
-      "methods": [
-        {
-          "name": "<init>",
-          "parameterTypes": [
-            "java.lang.String"
-          ]
-        }
-      ]
-    },
-    {
-      "type": "sun.java2d.InvalidPipeException$1"
+      "jniAccessible": true
     },
     {
       "type": "sun.java2d.NullSurfaceData",
@@ -1435,9 +1214,6 @@
           "name": "valid"
         }
       ]
-    },
-    {
-      "type": "sun.java2d.SurfaceDataProxy"
     },
     {
       "type": "sun.java2d.loops.Blit",
@@ -2302,18 +2078,6 @@
     },
     {
       "type": "sun.text.resources.cldr.FormatData_en"
-    },
-    {
-      "type": "sun.text.resources.cldr.FormatData_en_US"
-    },
-    {
-      "type": "sun.util.resources.cldr.TimeZoneNames"
-    },
-    {
-      "type": "sun.util.resources.cldr.TimeZoneNames_en"
-    },
-    {
-      "type": "sun.util.resources.cldr.TimeZoneNames_en_US"
     }
   ],
   "resources": [
@@ -2328,9 +2092,6 @@
     },
     {
       "glob": "META-INF/services/java.net.spi.URLStreamHandlerProvider"
-    },
-    {
-      "glob": "META-INF/services/java.time.zone.ZoneRulesProvider"
     },
     {
       "glob": "com/formdev/flatlaf/FlatLaf.properties"

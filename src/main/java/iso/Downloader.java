@@ -1,19 +1,23 @@
 package iso;
 
-import javax.swing.JLabel;
-import javax.swing.JOptionPane;
-import javax.swing.JProgressBar;
-import javax.swing.SwingUtilities;
+import javafx.application.Platform;
+import javafx.scene.control.Alert;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.Label;
+import javafx.scene.control.ProgressBar;
+
 import java.io.BufferedInputStream;
 import java.io.BufferedOutputStream;
-import java.io.File;
 import java.io.FileOutputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.util.Map;
+import java.util.Optional;
 import java.util.concurrent.ConcurrentHashMap;
+import java.util.concurrent.CountDownLatch;
+import java.util.concurrent.atomic.AtomicBoolean;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -22,6 +26,7 @@ public class Downloader {
     private static final int BUFFER_SIZE = 256 * 1024;
     private static final long UI_UPDATE_INTERVAL_MS = 150L;
     private static final Pattern CONTENT_RANGE_TOTAL = Pattern.compile(".*/(\\d+)$");
+
     private final Map<String, Long> remoteFileSizeCache = new ConcurrentHashMap<>();
     private volatile boolean isCancelled = false;
 
@@ -47,15 +52,15 @@ public class Downloader {
         }
     }
 
-    public void downloadFile(JProgressBar progressBar,
-                             JLabel label,
+    public void downloadFile(ProgressBar progressBar,
+                             Label label,
                              URL url,
                              String output) {
         downloadFile(progressBar, label, url, output, 0L);
     }
 
-    public void downloadFile(JProgressBar progressBar,
-                             JLabel label,
+    public void downloadFile(ProgressBar progressBar,
+                             Label label,
                              URL url,
                              String output,
                              long partOffset) {
@@ -64,9 +69,8 @@ public class Downloader {
         try {
             HttpURLConnection conn = openConnection(url, safeOffset, safeOffset > 0);
             int code = conn.getResponseCode();
-            if (code >= 400 && code != HTTP_RANGE_NOT_SATISFIABLE) {
+            if (code >= 400 && code != HTTP_RANGE_NOT_SATISFIABLE)
                 throw new IOException("HTTP " + code + " while downloading");
-            }
 
             long totalSize;
             if (safeOffset > 0) {
@@ -97,9 +101,7 @@ public class Downloader {
                 int lastPercent = -1;
 
                 while ((bytesRead = in.read(buffer)) != -1) {
-                    if (isCancelled) {
-                        break;
-                    }
+                    if (isCancelled) break;
 
                     out.write(buffer, 0, bytesRead);
                     totalRead += bytesRead;
@@ -108,15 +110,13 @@ public class Downloader {
                     long now = System.currentTimeMillis();
                     boolean shouldUpdate = percent != lastPercent
                             && (now - lastUiUpdate >= UI_UPDATE_INTERVAL_MS || percent == 100);
-                    if (!shouldUpdate) {
-                        continue;
-                    }
+                    if (!shouldUpdate) continue;
 
                     lastUiUpdate = now;
                     lastPercent = percent;
                     long finalTotalRead = totalRead;
 
-                    SwingUtilities.invokeLater(() -> {
+                    Platform.runLater(() -> {
                         if (totalSize > 0) {
                             label.setText("Downloaded "
                                     + (finalTotalRead / 1024 / 1024) + "MB / "
@@ -124,28 +124,52 @@ public class Downloader {
                         } else {
                             label.setText("Downloaded " + (finalTotalRead / 1024 / 1024) + "MB");
                         }
-                        progressBar.setValue(percent);
+                        progressBar.setProgress(percent / 100.0);
                     });
                 }
             }
             conn.disconnect();
 
         } catch (Exception e) {
-            if (isCancelled) {
-                return;
-            }
+            if (isCancelled) return;
 
-            int choice = JOptionPane.showConfirmDialog(null,
-                    "Download failed or timed out.\nKeep partial file?",
-                    "Download Error",
-                    JOptionPane.YES_NO_OPTION);
-
-            if (choice == JOptionPane.NO_OPTION) {
-                var f = new java.io.File(output);
-                //noinspection ResultOfMethodCallIgnored
-                f.delete();
+            boolean keepPartial = askKeepPartialFile();
+            if (!keepPartial) {
+                java.io.File f = new java.io.File(output);
+                boolean deleted = f.delete();
+                if (!deleted && f.exists())
+                    Platform.runLater(() -> label.setText("Could not remove partial file"));
             }
         }
+    }
+
+    private boolean askKeepPartialFile() {
+        AtomicBoolean keepPartial = new AtomicBoolean(true);
+        CountDownLatch latch = new CountDownLatch(1);
+
+        Runnable prompt = () -> {
+            try {
+                Alert alert = new Alert(Alert.AlertType.CONFIRMATION);
+                alert.setTitle("Download Error");
+                alert.setHeaderText("Download failed or timed out");
+                alert.setContentText("Keep partial file?");
+                Optional<ButtonType> result = alert.showAndWait();
+                keepPartial.set(result.isPresent() && result.get() == ButtonType.OK);
+            } finally {
+                latch.countDown();
+            }
+        };
+
+        if (Platform.isFxApplicationThread()) prompt.run();
+        else {
+            Platform.runLater(prompt);
+            try {
+                latch.await();
+            } catch (InterruptedException ie) {
+                Thread.currentThread().interrupt();
+            }
+        }
+        return keepPartial.get();
     }
 
     private HttpURLConnection openConnection(URL url, long existingSize, boolean useRange) throws IOException {
@@ -157,9 +181,8 @@ public class Downloader {
         conn.setReadTimeout(60000);
         conn.setUseCaches(false);
         conn.setInstanceFollowRedirects(true);
-        if (useRange && existingSize > 0) {
+        if (useRange && existingSize > 0)
             conn.setRequestProperty("Range", "bytes=" + existingSize + "-");
-        }
         conn.connect();
         return conn;
     }
@@ -167,9 +190,7 @@ public class Downloader {
     public long getRemoteFileSize(URL url) {
         String key = url.toString();
         Long cachedSize = remoteFileSizeCache.get(key);
-        if (cachedSize != null && cachedSize > 0) {
-            return cachedSize;
-        }
+        if (cachedSize != null && cachedSize > 0) return cachedSize;
 
         HttpURLConnection conn = null;
         try {
@@ -187,9 +208,7 @@ public class Downloader {
             }
         } catch (Exception ignored) {
         } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
+            if (conn != null) conn.disconnect();
         }
 
         try {
@@ -205,23 +224,17 @@ public class Downloader {
                 Matcher matcher = CONTENT_RANGE_TOTAL.matcher(contentRange.trim());
                 if (matcher.find()) {
                     long size = Long.parseLong(matcher.group(1));
-                    if (size > 0) {
-                        remoteFileSizeCache.put(key, size);
-                    }
+                    if (size > 0) remoteFileSizeCache.put(key, size);
                     return size;
                 }
             }
             long size = conn.getContentLengthLong();
-            if (size > 0) {
-                remoteFileSizeCache.put(key, size);
-            }
+            if (size > 0) remoteFileSizeCache.put(key, size);
             return size;
         } catch (Exception ignored) {
             return -1L;
         } finally {
-            if (conn != null) {
-                conn.disconnect();
-            }
+            if (conn != null) conn.disconnect();
         }
     }
 }

@@ -30,9 +30,15 @@ mvn clean package
 
 Outputs are generated in project root and `target/`.
 
+### Linux AppImage Notes
+
+- Linux packaging is handled directly in `pom.xml` (`linux` profile).
+- Runtime is cached at `./.cache/t2iso/appimage/runtime-x86_64` and reused across builds.
+- If runtime download fails, Maven falls back to standard `appimagetool` behavior.
+
 This creates a release and uploads build artifacts.
 
-## Native Image Metadata (Swing/AWT)
+## Native Image Metadata (JavaFX)
 
 If native image fails at runtime with missing JNI classes/methods, regenerate metadata with the agent:
 

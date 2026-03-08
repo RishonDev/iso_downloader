@@ -1,0 +1,21 @@
+.root {
+    -fx-background-color: #f4f6f8;
+    -fx-text-fill: #1f2328;
+}
+
+.menu-bar {
+    -fx-background-color: linear-gradient(to bottom, #ffffff, #eef2f6);
+}
+
+.text-field,
+.combo-box-base,
+.button {
+    -fx-background-radius: 8;
+}
+
+.label,
+.check-box,
+.menu,
+.menu-item {
+    -fx-text-fill: #1f2328;
+}

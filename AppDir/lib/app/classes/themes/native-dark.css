@@ -1,0 +1,29 @@
+.root {
+    -fx-background-color: #1f2328;
+    -fx-text-fill: #e6edf3;
+}
+
+.menu-bar {
+    -fx-background-color: linear-gradient(to bottom, #2b313a, #1f2328);
+}
+
+.text-field,
+.combo-box-base,
+.button {
+    -fx-background-radius: 8;
+}
+
+.label,
+.check-box,
+.menu,
+.menu-item {
+    -fx-text-fill: #e6edf3;
+}
+
+.progress-bar > .track {
+    -fx-background-color: #2b313a;
+}
+
+.progress-bar > .bar {
+    -fx-background-color: #3b82f6;
+}

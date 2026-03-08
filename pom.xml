@@ -2,15 +2,16 @@
     <modelVersion>4.0.0</modelVersion>
     <groupId>t2linux</groupId>
     <artifactId>iso</artifactId>
-    <version>0.5-beta</version>
+    <version>0.7</version>
 
     <properties>
         <maven.compiler.release>21</maven.compiler.release>
         <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-        <main.class>iso.T2ISO</main.class>
+        <main.class>iso.Main</main.class>
         <app.name>T2ISO</app.name>
-        <runtime.modules>java.base,java.desktop,jdk.crypto.ec</runtime.modules>
-        <flatlaf.version>3.7</flatlaf.version>
+        <runtime.modules>java.base,java.desktop,jdk.crypto.ec,jdk.unsupported</runtime.modules>
+        <runtime.image.dir>${project.build.directory}/runtime-min</runtime.image.dir>
+        <javafx.version>21.0.6</javafx.version>
     </properties>
 
     <build>
@@ -66,7 +67,7 @@
                             <target>
 
                                 <delete dir="runtime" quiet="true"/>
-                                <delete dir="runtime-min" quiet="true"/>
+                                <delete dir="${runtime.image.dir}" quiet="true"/>
                                 <delete dir="${app.name}" quiet="true"/>
                                 <delete dir="${app.name}.app" quiet="true"/>
                                 <delete dir="AppDir" quiet="true"/>
@@ -82,7 +83,7 @@
                                     <arg value="--compress=2"/>
 
                                     <arg value="--output"/>
-                                    <arg value="runtime-min"/>
+                                    <arg value="${runtime.image.dir}"/>
                                 </exec>
 
                                 <!-- Package app -->
@@ -104,7 +105,7 @@
                                     <arg value="${main.class}"/>
 
                                     <arg value="--runtime-image"/>
-                                    <arg value="runtime-min"/>
+                                    <arg value="${runtime.image.dir}"/>
 
                                 </exec>
 
@@ -121,9 +122,30 @@
 
     <dependencies>
         <dependency>
-            <groupId>com.formdev</groupId>
-            <artifactId>flatlaf</artifactId>
-            <version>${flatlaf.version}</version>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-controls</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-graphics</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+        <dependency>
+            <groupId>org.openjfx</groupId>
+            <artifactId>javafx-base</artifactId>
+            <version>${javafx.version}</version>
+        </dependency>
+
+        <dependency>
+            <groupId>org.jfxtras</groupId>
+            <artifactId>jmetro</artifactId>
+            <version>11.6.16</version>
+        </dependency>
+        <dependency>
+            <groupId>io.github.mkpaz</groupId>
+            <artifactId>atlantafx-base</artifactId>
+            <version>2.0.1</version>
         </dependency>
         <dependency>
             <groupId>org.junit.jupiter</groupId>
@@ -228,10 +250,17 @@ exec "$HERE/bin/${app.name}" "$@"
                                         <copy todir="AppDir">
                                             <fileset dir="${project.basedir}/packaging/linux"/>
                                         </copy>
-
-                                        <exec executable="appimagetool" failonerror="true">
-                                            <env key="ARCH" value="x86_64"/>
-                                            <arg value="AppDir"/>
+                                        <mkdir dir="${project.basedir}/.cache/t2iso/appimage"/>
+                                        <get src="https://github.com/AppImage/type2-runtime/releases/download/continuous/runtime-x86_64"
+                                             dest="${project.basedir}/.cache/t2iso/appimage/runtime-x86_64"
+                                             skipexisting="true"
+                                             ignoreerrors="true"/>
+                                        <chmod file="${project.basedir}/.cache/t2iso/appimage/runtime-x86_64"
+                                               perm="755"
+                                               failonerror="false"/>
+                                        <exec executable="sh" failonerror="true">
+                                            <arg value="-c"/>
+                                            <arg value="if [ -f '${project.basedir}/.cache/t2iso/appimage/runtime-x86_64' ]; then ARCH=x86_64 appimagetool --runtime-file '${project.basedir}/.cache/t2iso/appimage/runtime-x86_64' AppDir '${app.name}-x86_64.AppImage'; else ARCH=x86_64 appimagetool AppDir '${app.name}-x86_64.AppImage'; fi"/>
                                         </exec>
 
                                     </target>

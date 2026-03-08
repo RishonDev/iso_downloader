@@ -4,7 +4,7 @@ set -euo pipefail
 ROOT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")/.." && pwd)"
 NATIVE_POM="$ROOT_DIR/native/pom_native.xml"
 TARGET_DIR="$ROOT_DIR/native/target"
-JAR_PATH="$TARGET_DIR/iso-native-0.2-beta.jar"
+JAR_PATH="$TARGET_DIR/iso-native-0.7.jar"
 CLASSPATH_FILE="$TARGET_DIR/runtime.classpath"
 CONFIG_DIR="$ROOT_DIR/native/src/main/resources/META-INF/native-image/t2linux/iso-native"
 

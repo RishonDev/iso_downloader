@@ -1,30 +1,34 @@
 package iso;
 
-import javax.swing.BorderFactory;
-import javax.swing.JButton;
-import javax.swing.JCheckBox;
-import javax.swing.JCheckBoxMenuItem;
-import javax.swing.JComboBox;
-import javax.swing.JFileChooser;
-import javax.swing.JFrame;
-import javax.swing.JLabel;
-import javax.swing.JMenu;
-import javax.swing.JMenuBar;
-import javax.swing.JMenuItem;
-import javax.swing.JOptionPane;
-import javax.swing.JPanel;
-import javax.swing.JProgressBar;
-import javax.swing.JTextField;
-import javax.swing.SwingConstants;
-import javax.swing.SwingUtilities;
-import java.awt.GridBagConstraints;
-import java.awt.GridBagLayout;
-import java.awt.GraphicsEnvironment;
-import java.awt.Insets;
-import java.awt.AWTError;
-import java.awt.event.MouseAdapter;
-import java.awt.event.MouseEvent;
+import javafx.application.Application;
+import javafx.application.Platform;
+import javafx.collections.FXCollections;
+import javafx.geometry.Insets;
+import javafx.geometry.Pos;
+import javafx.scene.Scene;
+import javafx.scene.control.Alert;
+import javafx.scene.control.Button;
+import javafx.scene.control.ButtonBar;
+import javafx.scene.control.ButtonType;
+import javafx.scene.control.CheckBox;
+import javafx.scene.control.CheckMenuItem;
+import javafx.scene.control.ComboBox;
+import javafx.scene.control.Label;
+import javafx.scene.control.Menu;
+import javafx.scene.control.MenuBar;
+import javafx.scene.control.MenuItem;
+import javafx.scene.control.ProgressBar;
+import javafx.scene.control.TextField;
+import javafx.scene.layout.BorderPane;
+import javafx.scene.layout.ColumnConstraints;
+import javafx.scene.layout.GridPane;
+import javafx.scene.layout.Priority;
+import javafx.scene.layout.Region;
+import javafx.stage.DirectoryChooser;
+import javafx.stage.Stage;
+
 import java.io.File;
+import java.io.FileInputStream;
 import java.io.IOException;
 import java.io.InputStream;
 import java.io.OutputStream;
@@ -39,12 +43,13 @@ import java.util.LinkedHashMap;
 import java.util.List;
 import java.util.Locale;
 import java.util.Map;
-import java.util.Objects;
+import java.util.Optional;
 import java.util.Properties;
 import java.util.Set;
-import java.util.concurrent.atomic.AtomicInteger;
+import java.util.concurrent.Callable;
+import java.util.concurrent.FutureTask;
 
-public class T2ISO {
+public class T2ISO extends Application {
     private static final int HASH_BUFFER_SIZE = 64 * 1024;
 
     private final Downloader downloader = new Downloader();
@@ -54,48 +59,44 @@ public class T2ISO {
     private final Properties settings = new Properties();
     private String output;
 
-    private final JFrame frame = new JFrame("T2 Linux ISO Downloader");
-    private final JPanel panel = new JPanel(new GridBagLayout());
-    private final GridBagConstraints gbc = new GridBagConstraints();
+    private final ProgressBar progressBar = new ProgressBar(0);
+    private final Label statusLabel = new Label("Ready");
+    private final Label partLabel = new Label("Waiting to start...");
 
-    private final JProgressBar progressBar = new JProgressBar();
-    private final JLabel statusLabel = new JLabel("Ready");
-    private final JLabel partLabel = new JLabel("Waiting to start...");
+    private final Button downloadButton = new Button("Download ISO");
+    private final Button cancelButton = new Button("Cancel Download");
 
-    private final JButton downloadButton = new JButton("Download ISO");
-    private final JButton cancelButton = new JButton("Cancel Download");
+    private final CheckBox flashCheck = new CheckBox("Flash ISO?");
+    private final TextField deviceField = new TextField();
 
-    private final JCheckBox flashCheck = new JCheckBox("Flash ISO?");
-    private final JTextField deviceField = new JTextField(15);
+    private final Label flavourLabel = new Label("Flavour:");
+    private final ComboBox<String> flavourBox = new ComboBox<>();
 
-    private final JLabel flavourLabel = new JLabel("Flavour:");
-    private final JComboBox<String> flavourBox = new JComboBox<>();
-
-    private final JLabel versionLabel = new JLabel("Version:");
-    private final JComboBox<String> versionBox = new JComboBox<>();
+    private final Label versionLabel = new Label("Version:");
+    private final ComboBox<String> versionBox = new ComboBox<>();
 
     private final MDEngine engine = new MDEngine();
+    private final USB usb = new USB();
     private final Map<String, List<String[]>> itemsByFlavour = new LinkedHashMap<>();
 
+    private Stage stage;
+    private Scene scene;
+    private volatile boolean preventClose = false;
+
     private void showError(String message) {
-        SwingUtilities.invokeLater(() ->
-                JOptionPane.showMessageDialog(frame, message, "Error", JOptionPane.ERROR_MESSAGE));
+        Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Error", message));
     }
 
     private void showWarning(String message) {
-        SwingUtilities.invokeLater(() ->
-                JOptionPane.showMessageDialog(frame, message, "Warning", JOptionPane.WARNING_MESSAGE));
+        Platform.runLater(() -> showAlert(Alert.AlertType.WARNING, "Warning", message));
     }
 
-    private void configureLookAndFeel() {
-        ThemeUtil.configureLookAndFeel(getBool("darkMode") ? Boolean.TRUE : null);
-    }
-
-    private void refreshLookAndFeel() {
-        configureLookAndFeel();
-        SwingUtilities.updateComponentTreeUI(frame);
-        frame.pack();
-        frame.setMinimumSize(frame.getSize());
+    private void showAlert(Alert.AlertType type, String title, String message) {
+        Alert alert = new Alert(type, message, ButtonType.OK);
+        alert.setTitle(title);
+        alert.setHeaderText(null);
+        if (stage != null) alert.initOwner(stage);
+        alert.showAndWait();
     }
 
     private void loadSettings() {
@@ -122,268 +123,210 @@ public class T2ISO {
         }
     }
 
-    private boolean getBool(String key) {
-        String defaultValue =
-                ("verifyIso".equals(key) || "enableAutoMerge".equals(key)) ? "true" : "false";
-        return Boolean.parseBoolean(settings.getProperty(key, defaultValue));
-    }
+    private MenuBar createMenuBar() {
+        Menu fileMenu = new Menu("File");
+        MenuItem resumeItem = new MenuItem("Resume Download");
+        resumeItem.setOnAction(e -> startDownload());
 
-    private void setBool(String key, boolean value) {
-        settings.setProperty(key, Boolean.toString(value));
-    }
+        Menu settingsMenu = new Menu("Settings");
+        CheckMenuItem enablePartsItem = new CheckMenuItem("Enable parts");
+        enablePartsItem.setSelected(Boolean.parseBoolean(settings.getProperty("enableParts", "false")));
 
-    private List<String> loadItems() {
-        try {
-            engine.readMetadata();
-        } catch (Exception e) {
-            showError(e.getMessage());
-            return List.of();
-        }
+        CheckMenuItem enableResumeItem = new CheckMenuItem("Enable resume");
+        enableResumeItem.setSelected(Boolean.parseBoolean(settings.getProperty("enableResume", "false")));
 
-        return engine.mergeToSingleLine(engine.getMetadata());
-    }
+        CheckMenuItem enableAutoMergeItem = new CheckMenuItem("Enable auto merge");
+        enableAutoMergeItem.setSelected(Boolean.parseBoolean(settings.getProperty("enableAutoMerge", "true")));
 
-    private void indexItemsByFlavour(List<String> items) {
-        itemsByFlavour.clear();
-        for (String line : items) {
-            String[] parts = line.split(",");
-            if (parts.length < 2) {
-                continue;
-            }
-            parts[0] = parts[0].trim();
-            parts[1] = parts[1].trim();
-            if (parts.length > 2) {
-                parts[2] = parts[2].trim();
-            }
-            itemsByFlavour.computeIfAbsent(parts[0], key -> new ArrayList<>()).add(parts);
-        }
-    }
+        CheckMenuItem darkModeItem = new CheckMenuItem("Force dark mode");
+        darkModeItem.setSelected(Boolean.parseBoolean(settings.getProperty("darkMode", "false")));
 
-    private boolean populateFlavours() {
-        flavourBox.removeAllItems();
-        Set<String> seen = new HashSet<>();
-        for (String flavour : itemsByFlavour.keySet()) {
-            if (seen.add(flavour)) {
-                flavourBox.addItem(flavour);
-            }
-        }
-        return flavourBox.getItemCount() > 0;
-    }
+        CheckMenuItem verifyIsoItem = new CheckMenuItem("Verify ISO");
+        verifyIsoItem.setSelected(Boolean.parseBoolean(settings.getProperty("verifyIso", "true")));
 
-    private JMenuBar createMenuBar() {
-        JMenuBar menuBar = new JMenuBar();
-        JMenu fileMenu = new JMenu("File");
-        JMenuItem resumeItem = new JMenuItem("Resume Download");
-        resumeItem.addActionListener(e -> startDownload());
+        CheckMenuItem verifyUsbItem = new CheckMenuItem("Verify USB");
+        verifyUsbItem.setSelected(Boolean.parseBoolean(settings.getProperty("verifyUsb", "false")));
 
-        JMenu settingsMenu = new JMenu("Settings");
-        JCheckBoxMenuItem enablePartsItem = new JCheckBoxMenuItem("Enable parts", getBool("enableParts"));
-        JCheckBoxMenuItem enableResumeItem = new JCheckBoxMenuItem("Enable resume", getBool("enableResume"));
-        JCheckBoxMenuItem enableAutoMergeItem =
-                new JCheckBoxMenuItem("Enable auto merge", getBool("enableAutoMerge"));
-        JCheckBoxMenuItem darkModeItem = new JCheckBoxMenuItem("Force dark mode", getBool("darkMode"));
-        JCheckBoxMenuItem verifyIsoItem = new JCheckBoxMenuItem("Verify ISO", getBool("verifyIso"));
-        JCheckBoxMenuItem verifyUsbItem = new JCheckBoxMenuItem("Verify USB", getBool("verifyUsb"));
-
-        enableResumeItem.addActionListener(e -> {
+        enableResumeItem.setOnAction(e -> {
             if (enableResumeItem.isSelected()) {
                 enablePartsItem.setSelected(true);
-                setBool("enableParts", true);
+                settings.setProperty("enableParts", Boolean.toString(true));
             }
-            setBool("enableResume", enableResumeItem.isSelected());
+            settings.setProperty("enableResume", Boolean.toString(enableResumeItem.isSelected()));
             saveSettings();
         });
-        enablePartsItem.addActionListener(e -> {
+
+        enablePartsItem.setOnAction(e -> {
             if (!enablePartsItem.isSelected() && enableResumeItem.isSelected()) {
                 enablePartsItem.setSelected(true);
                 return;
             }
-            setBool("enableParts", enablePartsItem.isSelected());
-            saveSettings();
-        });
-        enableAutoMergeItem.addActionListener(e -> {
-            setBool("enableAutoMerge", enableAutoMergeItem.isSelected());
-            saveSettings();
-        });
-        darkModeItem.addActionListener(e -> {
-            setBool("darkMode", darkModeItem.isSelected());
-            saveSettings();
-            refreshLookAndFeel();
-        });
-        verifyIsoItem.addActionListener(e -> {
-            setBool("verifyIso", verifyIsoItem.isSelected());
-            saveSettings();
-        });
-        verifyUsbItem.addActionListener(e -> {
-            setBool("verifyUsb", verifyUsbItem.isSelected());
+            settings.setProperty("enableParts", Boolean.toString(enablePartsItem.isSelected()));
             saveSettings();
         });
 
-        fileMenu.add(resumeItem);
-        settingsMenu.add(enablePartsItem);
-        settingsMenu.add(enableResumeItem);
-        settingsMenu.add(enableAutoMergeItem);
-        settingsMenu.add(darkModeItem);
-        settingsMenu.add(verifyIsoItem);
-        settingsMenu.add(verifyUsbItem);
-        menuBar.add(fileMenu);
-        menuBar.add(settingsMenu);
-        return menuBar;
+        enableAutoMergeItem.setOnAction(e -> {
+            settings.setProperty("enableAutoMerge", Boolean.toString(enableAutoMergeItem.isSelected()));
+            saveSettings();
+        });
+
+        darkModeItem.setOnAction(e -> {
+            settings.setProperty("darkMode", Boolean.toString(darkModeItem.isSelected()));
+            saveSettings();
+            ThemeUtil.applyTheme(scene, Boolean.parseBoolean(settings.getProperty("darkMode", "false")) ? Boolean.TRUE : null);
+        });
+
+        verifyIsoItem.setOnAction(e -> {
+            settings.setProperty("verifyIso", Boolean.toString(verifyIsoItem.isSelected()));
+            saveSettings();
+        });
+
+        verifyUsbItem.setOnAction(e -> {
+            settings.setProperty("verifyUsb", Boolean.toString(verifyUsbItem.isSelected()));
+            saveSettings();
+        });
+
+        fileMenu.getItems().add(resumeItem);
+        settingsMenu.getItems().addAll(
+                enablePartsItem,
+                enableResumeItem,
+                enableAutoMergeItem,
+                darkModeItem,
+                verifyIsoItem,
+                verifyUsbItem
+        );
+
+        return new MenuBar(fileMenu, settingsMenu);
     }
 
     private void configureActions() {
         flashCheck.setSelected(false);
-        deviceField.setEnabled(true);
-        flashCheck.addActionListener(e -> {
-            if(flashCheck.isSelected())downloadButton.setText("Download ISO and Flash!");
-            else downloadButton.setText("Download ISO");
-        });
+        deviceField.setPrefColumnCount(18);
+        downloadButton.setMaxWidth(Double.MAX_VALUE);
+        cancelButton.setMaxWidth(Double.MAX_VALUE);
+        downloadButton.managedProperty().bind(downloadButton.visibleProperty());
+        cancelButton.managedProperty().bind(cancelButton.visibleProperty());
 
+        flashCheck.setOnAction(e ->
+                downloadButton.setText(flashCheck.isSelected() ? "Download ISO and Flash!" : "Download ISO"));
+
+        downloadButton.setVisible(true);
         cancelButton.setVisible(false);
-        cancelButton.addActionListener(e -> {
-            int confirmCancel = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Cancel current download?",
-                    "Cancel Download",
-                    JOptionPane.YES_NO_OPTION
-            );
+        setControlsBusy(false);
+        cancelButton.setOnAction(e -> {
+            ButtonType yes = new ButtonType("Yes", ButtonBar.ButtonData.YES);
+            ButtonType no = new ButtonType("No", ButtonBar.ButtonData.NO);
+            Alert cancelConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Cancel current download?", yes, no);
+            cancelConfirm.setTitle("Cancel Download");
+            cancelConfirm.setHeaderText(null);
+            cancelConfirm.initOwner(stage);
 
-            if (confirmCancel != JOptionPane.YES_OPTION) {
-                return;
-            }
+            Optional<ButtonType> confirm = cancelConfirm.showAndWait();
+            if (confirm.isEmpty() || confirm.get() != yes) return;
 
             downloader.setCancelled(true);
+            preventClose = false;
             showWarning("Download is cancelled");
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
 
-            int deleteChoice = JOptionPane.showConfirmDialog(
-                    frame,
-                    "Delete partial file?",
-                    "Delete Partial Download",
-                    JOptionPane.YES_NO_OPTION
-            );
+            Alert deleteConfirm = new Alert(Alert.AlertType.CONFIRMATION, "Delete partial file?", yes, no);
+            deleteConfirm.setTitle("Delete Partial Download");
+            deleteConfirm.setHeaderText(null);
+            deleteConfirm.initOwner(stage);
+            Optional<ButtonType> deleteChoice = deleteConfirm.showAndWait();
 
-            if (deleteChoice == JOptionPane.YES_OPTION && output != null) {
-                new File(output).delete();
+            if (deleteChoice.isPresent() && deleteChoice.get() == yes && output != null) {
+                File partialFile = new File(output);
+                boolean deleted = partialFile.delete();
+                if (!deleted && partialFile.exists())
+                    showWarning("Could not delete partial file: " + partialFile.getName());
             }
 
-            SwingUtilities.invokeLater(() -> {
-                progressBar.setValue(0);
-                statusLabel.setText("Download cancelled");
-                partLabel.setText("Idle");
-                downloadButton.setVisible(true);
-                cancelButton.setVisible(false);
-            });
+            progressBar.setProgress(0);
+            statusLabel.setText("Download cancelled");
+            partLabel.setText("Idle");
+            setControlsBusy(false);
         });
 
-        flavourBox.addActionListener(e -> {
-            String selected = (String) flavourBox.getSelectedItem();
-            if (selected == null) {
-                return;
-            }
-            populateVersions(selected);
+        flavourBox.setOnAction(e -> {
+            String selected = flavourBox.getSelectionModel().getSelectedItem();
+            if (selected != null) populateVersions(selected);
         });
-        String initialSelected = (String) flavourBox.getSelectedItem();
-        if (initialSelected != null) {
-            populateVersions(initialSelected);
-        }
 
-        deviceField.addActionListener(e -> {
-            String device = deviceField.getText().trim();
+        String initialSelected = flavourBox.getSelectionModel().getSelectedItem();
+        if (initialSelected != null) populateVersions(initialSelected);
 
-            if (!flashCheck.isSelected()) {
-                statusLabel.setText("Flash disabled");
-                return;
-            }
-            if (device.isEmpty()) {
-                showError("No USB selected! Please click on the provided text box to select.");
-                statusLabel.setText("Invalid device");
-                return;
-            }
-            if (!device.startsWith("/dev/")) {
-                showError("Device must start with /dev/ (example: /dev/sdb)");
-                statusLabel.setText("Invalid device");
-                return;
-            }
-
-            statusLabel.setText("Device selected: " + device);
+        deviceField.setOnAction(e -> validateDeviceField());
+        deviceField.setOnMouseClicked(e -> {
+            if (e.getClickCount() >= 1) openDeviceChooser();
         });
-        deviceField.addMouseListener(new MouseAdapter() {
-            @Override
-            public void mouseClicked(MouseEvent e) {
-                openDeviceChooser();
-            }
-        });
-        downloadButton.addActionListener(e -> {
+
+        downloadButton.setOnAction(e -> {
             if (flashCheck.isSelected()) {
                 String device = deviceField.getText().trim();
-                if (device.isEmpty()) {
-                    showError("No USB selected! Please click on the provided text box to select.");
-                    return;
-                }
-                if (!device.startsWith("/dev/")) {
-                    showError("Device must start with /dev/ (example: /dev/sdb)");
-                    return;
-                }
+                if (!validateDevice(device, false)) return;
             }
             startDownload();
         });
     }
 
-    private void populateVersions(String selectedFlavour) {
-        versionBox.removeAllItems();
-        List<String[]> flavourItems = itemsByFlavour.getOrDefault(selectedFlavour, List.of());
-        for (String[] parts : flavourItems) {
-            String version;
-            if (parts.length > 2 && !parts[2].startsWith("http")) {
-                version = parts[1] + " " + parts[2];
-            } else {
-                version = parts[1];
-            }
-            versionBox.addItem(version.trim());
+    private void validateDeviceField() {
+        String device = deviceField.getText().trim();
+
+        if (!flashCheck.isSelected()) {
+            statusLabel.setText("Flash disabled");
+            return;
         }
+        validateDevice(device, true);
     }
 
     private void openDeviceChooser() {
-        JFileChooser chooser = new JFileChooser();
         String osName = System.getProperty("os.name").toLowerCase(Locale.ROOT);
         File volumesDir = new File("/Volumes");
         File mediaDir = new File("/run/media/" + System.getProperty("user.name"));
-        if (osName.contains("mac") && volumesDir.isDirectory()) {
-            chooser.setCurrentDirectory(volumesDir);
-        } else if (mediaDir.isDirectory()) {
-            chooser.setCurrentDirectory(mediaDir);
-        } else {
-            chooser.setCurrentDirectory(new File(home));
-        }
-        chooser.setDialogTitle("Select USB Device");
-        chooser.setFileSelectionMode(JFileChooser.FILES_AND_DIRECTORIES);
-        chooser.setMultiSelectionEnabled(false);
 
-        int result = chooser.showOpenDialog(frame);
-        if (result == JFileChooser.APPROVE_OPTION) {
-            String selectedPath = chooser.getSelectedFile().getAbsolutePath();
-            String resolvedDevice = selectedPath;
+        DirectoryChooser chooser = new DirectoryChooser();
+        chooser.setTitle("Select mounted USB volume");
+
+        if (osName.contains("mac") && volumesDir.isDirectory())
+            chooser.setInitialDirectory(volumesDir);
+        else if (mediaDir.isDirectory())
+            chooser.setInitialDirectory(mediaDir);
+        else
+            chooser.setInitialDirectory(new File(home));
+
+        File selected = chooser.showDialog(stage);
+        if (selected != null) {
+            String selectedPath = selected.getAbsolutePath();
             try {
-                USB usb = new USB();
-                if (selectedPath.startsWith("/dev/")) {
-                    resolvedDevice = usb.getParentDirectory(selectedPath);
-                } else {
-                    String partition = usb.getDF(selectedPath);
-                    resolvedDevice = usb.getParentDirectory(partition);
+                String partition = usb.getDF(selectedPath);
+                String resolvedDevice = usb.getParentDirectory(partition);
+                if (validateDevice(resolvedDevice, false)) {
+                    deviceField.setText(resolvedDevice);
+                    statusLabel.setText("Device selected: " + resolvedDevice);
+                    return;
                 }
-                deviceField.setText(resolvedDevice);
-                statusLabel.setText("Device selected: " + resolvedDevice);
-            } catch (Exception ex) {
-                showError("Could not resolve device from selection. Choose a mounted USB volume or /dev path.");
-                statusLabel.setText("Invalid device");
+            } catch (Exception ignored) {
+                showError("Could not resolve device from selection.");
             }
         }
+
+        statusLabel.setText("No device selected");
     }
 
     private void startDownload() {
-        String selectedFlavour = Objects.requireNonNull(flavourBox.getSelectedItem()).toString();
-        String selectedVersion = Objects.requireNonNull(versionBox.getSelectedItem()).toString();
+        String selectedFlavour = flavourBox.getSelectionModel().getSelectedItem();
+        if (selectedFlavour == null) {
+            showError("Please select flavour first.");
+            return;
+        }
+        String selectedVersion = versionBox.isVisible()
+                ? versionBox.getSelectionModel().getSelectedItem()
+                : "";
+        if (versionBox.isVisible() && (selectedVersion == null || selectedVersion.isBlank())) {
+            showError("Please select a version.");
+            return;
+        }
+
         boolean flashSelected = flashCheck.isSelected();
         String selectedDevice = deviceField.getText().trim();
         String targetOutput = buildOutputPath(selectedFlavour, selectedVersion);
@@ -394,24 +337,20 @@ public class T2ISO {
 
             try {
                 if (!handleExistingDownloadFile(targetOutput, flavourItems, selectedVersion, flashSelected)) {
-                    SwingUtilities.invokeLater(() -> {
-                        downloadButton.setVisible(true);
-                        cancelButton.setVisible(false);
-                    });
+                    Platform.runLater(() -> setControlsBusy(false));
                     return;
                 }
             } catch (Exception ex) {
                 showError(ex.getMessage());
-                SwingUtilities.invokeLater(() -> {
-                    downloadButton.setVisible(true);
-                    cancelButton.setVisible(false);
+                Platform.runLater(() -> {
+                    setControlsBusy(false);
                 });
                 return;
             }
 
-            SwingUtilities.invokeLater(() -> {
-                downloadButton.setVisible(false);
-                cancelButton.setVisible(true);
+            Platform.runLater(() -> {
+                preventClose = true;
+                setControlsBusy(true);
                 statusLabel.setText(new File(targetOutput).exists() ? "Resuming" : "Starting");
             });
 
@@ -419,13 +358,12 @@ public class T2ISO {
                 download(flavourItems, selectedFlavour, selectedVersion, flashSelected, selectedDevice);
             } catch (Exception ex) {
                 showError(ex.getMessage());
-                SwingUtilities.invokeLater(() -> {
-                    downloadButton.setVisible(true);
-                    cancelButton.setVisible(false);
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                Platform.runLater(() -> {
+                    preventClose = false;
+                    setControlsBusy(false);
                 });
             }
-        }).start();
+        }, "iso-download-thread").start();
     }
 
     private boolean handleExistingDownloadFile(String outputPath,
@@ -433,163 +371,107 @@ public class T2ISO {
                                                String selectedVersion,
                                                boolean flashSelected) throws Exception {
         File outputFile = new File(outputPath);
-        if (!outputFile.exists()) {
-            return true;
-        }
+        if (!outputFile.exists()) return true;
 
-        if (flashSelected) {
-            return true;
-        }
+        if (flashSelected) return true;
 
-        long expectedSize = computeExpectedIsoSize(flavourItems, selectedVersion);
+        long expectedSize = getExpectedSize(flavourItems, selectedVersion);
         long existingSize = outputFile.length();
         if (expectedSize > 0 && existingSize == expectedSize) {
-            SwingUtilities.invokeLater(() ->
-                    JOptionPane.showMessageDialog(
-                            frame,
-                            "This ISO is already downloaded.",
-                            "Already Downloaded",
-                            JOptionPane.INFORMATION_MESSAGE
-                    ));
+            runOnFxThread(() -> {
+                showAlert(Alert.AlertType.INFORMATION, "Already Downloaded", "This ISO is already downloaded.");
+                return null;
+            });
             return false;
         }
 
-        AtomicInteger choice = new AtomicInteger(JOptionPane.CLOSED_OPTION);
-        Runnable showPrompt = () -> {
-            Object[] options = {"Continue", "Delete"};
-            int result = JOptionPane.showOptionDialog(
-                    frame,
-                    "A previous download file already exists.\nContinue from existing data or delete and download again?",
-                    "Existing Download Found",
-                    JOptionPane.DEFAULT_OPTION,
-                    JOptionPane.QUESTION_MESSAGE,
-                    null,
-                    options,
-                    options[0]
+        return runOnFxThread(() -> {
+            ButtonType continueBtn = new ButtonType("Continue", ButtonBar.ButtonData.YES);
+            ButtonType deleteBtn = new ButtonType("Delete", ButtonBar.ButtonData.NO);
+            ButtonType cancelBtn = new ButtonType("Cancel", ButtonBar.ButtonData.CANCEL_CLOSE);
+            Alert alert = new Alert(
+                    Alert.AlertType.CONFIRMATION,
+                    "A previous download file already exists. Continue from existing data or delete and download again?",
+                    continueBtn,
+                    deleteBtn,
+                    cancelBtn
             );
-            choice.set(result);
-        };
+            alert.setTitle("Existing Download Found");
+            alert.setHeaderText(null);
+            alert.initOwner(stage);
+            Optional<ButtonType> choice = alert.showAndWait();
 
-        if (SwingUtilities.isEventDispatchThread()) {
-            showPrompt.run();
-        } else {
-            SwingUtilities.invokeAndWait(showPrompt);
-        }
-
-        if (choice.get() == 1) { // Delete
-            if (!outputFile.delete()) {
-                throw new RuntimeException("Could not delete existing download file.");
-            }
-            return true;
-        }
-
-        return choice.get() == 0; // Continue only
-    }
-
-    private long computeExpectedIsoSize(List<String[]> flavourItems, String selectedVersion) {
-        long total = 0L;
-        for (String[] data : flavourItems) {
-            if (data.length < 4 || !isVersionMatch(data, selectedVersion)) {
-                continue;
-            }
-            for (int p = 3; p < data.length; p++) {
-                try {
-                    long partSize = downloader.getRemoteFileSize(new java.net.URI(data[p]).toURL());
-                    if (partSize <= 0) {
-                        return -1L;
-                    }
-                    total += partSize;
-                } catch (Exception ignored) {
-                    return -1L;
+            if (choice.isPresent() && choice.get() == deleteBtn) {
+                boolean deleted = outputFile.delete();
+                if (!deleted && outputFile.exists()) {
+                    showAlert(Alert.AlertType.ERROR, "Error", "Could not delete existing download file.");
+                    return false;
                 }
+                return true;
             }
-        }
-        return total > 0 ? total : -1L;
+
+            return choice.isPresent() && choice.get() == continueBtn;
+        });
     }
 
-    private void buildLayout() {
-        progressBar.setStringPainted(true);
-        statusLabel.setHorizontalAlignment(SwingConstants.CENTER);
+    private BorderPane buildLayout() {
+        progressBar.setPrefWidth(520);
+        statusLabel.setId("statusLabel");
+        partLabel.setId("partLabel");
+        statusLabel.setMaxWidth(Double.MAX_VALUE);
+        statusLabel.setAlignment(Pos.CENTER);
+        partLabel.setMaxWidth(Double.MAX_VALUE);
+        partLabel.setAlignment(Pos.CENTER);
 
-        gbc.insets = new Insets(10, 10, 10, 10);
-        gbc.fill = GridBagConstraints.HORIZONTAL;
-        gbc.gridwidth = 1;
+        flavourBox.setItems(FXCollections.observableArrayList(flavourBox.getItems()));
 
-        gbc.gridx = 0;
-        gbc.gridy = 0;
-        panel.add(flavourLabel, gbc);
-        gbc.gridx = 1;
-        panel.add(flavourBox, gbc);
+        GridPane grid = new GridPane();
+        grid.setPadding(new Insets(20));
+        grid.setHgap(10);
+        grid.setVgap(12);
+        ColumnConstraints labelColumn = new ColumnConstraints();
+        labelColumn.setMinWidth(120);
+        ColumnConstraints inputColumn = new ColumnConstraints();
+        inputColumn.setHgrow(Priority.ALWAYS);
+        inputColumn.setFillWidth(true);
+        grid.getColumnConstraints().addAll(labelColumn, inputColumn);
 
-        gbc.gridx = 0;
-        gbc.gridy = 1;
-        panel.add(versionLabel, gbc);
-        gbc.gridx = 1;
-        panel.add(versionBox, gbc);
+        int row = 0;
+        grid.add(flavourLabel, 0, row);
+        grid.add(flavourBox, 1, row++);
 
-        gbc.gridx = 0;
-        gbc.gridy = 2;
-        gbc.gridwidth = 2;
-        panel.add(partLabel, gbc);
+        grid.add(versionLabel, 0, row);
+        grid.add(versionBox, 1, row++);
 
-        gbc.gridy = 3;
-        panel.add(progressBar, gbc);
+        grid.add(partLabel, 0, row, 2, 1);
+        row++;
 
-        gbc.gridy = 4;
-        panel.add(statusLabel, gbc);
+        grid.add(progressBar, 0, row, 2, 1);
+        row++;
 
-        gbc.gridy = 5;
-        gbc.gridwidth = 1;
-        gbc.gridx = 0;
-        panel.add(flashCheck, gbc);
-        gbc.gridx = 1;
-        panel.add(deviceField, gbc);
+        grid.add(statusLabel, 0, row, 2, 1);
+        row++;
 
-        gbc.gridy = 6;
-        gbc.gridx = 0;
-        gbc.gridwidth = 2;
-        panel.add(downloadButton, gbc);
-        panel.add(cancelButton, gbc);
-    }
+        grid.add(flashCheck, 0, row);
+        grid.add(deviceField, 1, row);
+        row++;
 
-    private void configureFrame(JMenuBar menuBar) {
-        frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
-        frame.setJMenuBar(menuBar);
-        panel.setBorder(BorderFactory.createEmptyBorder(20, 20, 20, 20));
-        frame.add(panel);
-        frame.pack();
-        frame.setMinimumSize(frame.getSize());
-        frame.setLocationRelativeTo(null);
-        frame.setVisible(true);
-    }
+        grid.add(downloadButton, 0, row, 2, 1);
+        grid.add(cancelButton, 0, row, 2, 1);
+        GridPane.setHgrow(downloadButton, Priority.ALWAYS);
+        GridPane.setHgrow(cancelButton, Priority.ALWAYS);
+        GridPane.setFillWidth(downloadButton, true);
+        GridPane.setFillWidth(cancelButton, true);
 
-    void start() {
-        loadSettings();
-        configureLookAndFeel();
-
-        List<String> items = loadItems();
-        if (items.isEmpty()) {
-            return;
-        }
-        indexItemsByFlavour(items);
-        if (!populateFlavours()) {
-            showError("No valid ISO metadata was found.");
-            return;
-        }
-
-        configureActions();
-        buildLayout();
-        configureFrame(createMenuBar());
-    }
-
-    private String buildOutputPath(String edition, String version) {
-        String iso = (edition + "-T2-" + version).replace(" ", "").replace(".", "") + ".iso";
-        return home + "/Downloads/" + iso;
+        BorderPane root = new BorderPane();
+        root.setTop(createMenuBar());
+        root.setCenter(grid);
+        return root;
     }
 
     String sha256(String file) throws Exception {
         MessageDigest digest = MessageDigest.getInstance("SHA-256");
-        try (var fis = new java.io.FileInputStream(file)) {
+        try (FileInputStream fis = new FileInputStream(file)) {
             byte[] buffer = new byte[HASH_BUFFER_SIZE];
             int n;
             while ((n = fis.read(buffer)) != -1) {
@@ -608,26 +490,18 @@ public class T2ISO {
                   String version,
                   boolean flashSelected,
                   String selectedDevice) throws Exception {
-        frame.setDefaultCloseOperation(JFrame.DO_NOTHING_ON_CLOSE);
         output = buildOutputPath(edition, version);
-        long downloadedBytes = new File(output).exists() ? new File(output).length() : 0L;
+        File outputFile = new File(output);
+        long downloadedBytes = outputFile.exists() ? outputFile.length() : 0L;
         boolean downloadedAtLeastOnePart = false;
 
         for (String[] data : meta) {
-            if (data.length < 4) {
-                continue;
-            }
-            if (!edition.equals(data[0])) {
-                continue;
-            }
-            if (!isVersionMatch(data, version)) {
-                continue;
-            }
+            if (data.length < 4) continue;
+            if (!edition.equals(data[0])) continue;
+            if (!matchesVersion(data, version)) continue;
 
             int totalParts = data.length - 3;
-            if (totalParts <= 0) {
-                continue;
-            }
+            if (totalParts <= 0) continue;
             downloadedAtLeastOnePart = true;
 
             for (int p = 0; p < totalParts; p++) {
@@ -638,14 +512,14 @@ public class T2ISO {
                 if (partSize > 0 && downloadedBytes >= partSize) {
                     downloadedBytes -= partSize;
                     int skipped = partNum;
-                    SwingUtilities.invokeLater(() ->
+                    Platform.runLater(() ->
                             partLabel.setText("Skipping downloaded part " + skipped + " of " + totalParts));
                     continue;
                 }
 
                 long partOffset = downloadedBytes;
                 downloadedBytes = 0L;
-                SwingUtilities.invokeLater(() ->
+                Platform.runLater(() ->
                         partLabel.setText("Downloading part " + partNum + " of " + totalParts));
 
                 downloader.downloadFile(progressBar, statusLabel,
@@ -654,103 +528,181 @@ public class T2ISO {
         }
 
         if (!downloadedAtLeastOnePart) {
-            SwingUtilities.invokeLater(() -> {
+            Platform.runLater(() -> {
                 statusLabel.setText("No matching ISO found");
                 partLabel.setText("Idle");
-                downloadButton.setVisible(true);
-                cancelButton.setVisible(false);
+                setControlsBusy(false);
+                preventClose = false;
             });
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
             return;
         }
 
         if (downloader.isCancelled()) {
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            Platform.runLater(() -> preventClose = false);
             return;
         }
 
-        SwingUtilities.invokeLater(() -> {
-            progressBar.setValue(100);
+        Platform.runLater(() -> {
+            progressBar.setProgress(1.0);
             statusLabel.setText("Finished");
             partLabel.setText("Download complete");
-            downloadButton.setVisible(true);
-            cancelButton.setVisible(false);
+            setControlsBusy(false);
         });
 
         try {
-            String expectedSha = findExpectedSha256(meta, edition, version);
+            String expectedSha = getExpectedSha(meta, edition, version);
             String actualSha = null;
-            if (getBool("verifyIso")) {
-                SwingUtilities.invokeLater(() -> statusLabel.setText("Verifying ISO..."));
+            if (Boolean.parseBoolean(settings.getProperty("verifyIso", "true"))) {
+                Platform.runLater(() -> statusLabel.setText("Verifying ISO..."));
                 actualSha = sha256(output);
-                if (expectedSha == null || expectedSha.isBlank()) {
+                if (expectedSha == null || expectedSha.isBlank())
                     showWarning("Verify ISO is enabled, but metadata has no SHA256 for this distro.");
-                } else if (!actualSha.equalsIgnoreCase(expectedSha)) {
+                else if (!actualSha.equalsIgnoreCase(expectedSha)) {
                     showError("ISO verification failed: checksum mismatch.");
-                    frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+                    Platform.runLater(() -> preventClose = false);
                     return;
                 } else {
-                    SwingUtilities.invokeLater(() -> statusLabel.setText("ISO verification passed"));
+                    Platform.runLater(() -> statusLabel.setText("ISO verification passed"));
                 }
             }
 
             if (flashSelected) {
                 String device = selectedDevice;
-                if (device.isEmpty() || !device.startsWith("/dev/")) {
+                if (device.isEmpty() || !device.startsWith("/dev/"))
                     showError("Cannot flash: invalid USB device path");
-                } else {
-                    long totalBytes = new File(output).length();
-                    new USB().flash(
+                else {
+                    usb.flash(
                             output,
                             device,
-                            totalBytes,
+                            outputFile.length(),
                             progressBar,
                             statusLabel,
-                            getBool("verifyUsb"),
+                            Boolean.parseBoolean(settings.getProperty("verifyUsb", "false")),
                             expectedSha != null && !expectedSha.isBlank() ? expectedSha : actualSha
                     );
                 }
             }
-            frame.setDefaultCloseOperation(JFrame.EXIT_ON_CLOSE);
+            Platform.runLater(() -> preventClose = false);
         } catch (Exception e) {
             showError("Checksum failed");
+            Platform.runLater(() -> preventClose = false);
         }
     }
 
-    private boolean isVersionMatch(String[] data, String version) {
-        return version.contains(data[1]) || (data.length > 2 && version.contains(data[2]));
+    private String buildOutputPath(String edition, String version) {
+        String name = (version == null || version.isBlank())
+                ? edition + "-T2"
+                : edition + "-T2-" + version;
+        return Path.of(home, "Downloads", name.replaceAll("[^A-Za-z0-9._-]", "") + ".iso").toString();
     }
 
-    private String findExpectedSha256(List<String[]> meta, String edition, String version) {
-        for (String[] data : meta) {
-            if (data.length < 4 || !edition.equals(data[0]) || !isVersionMatch(data, version)) {
-                continue;
+    private void setControlsBusy(boolean busy) {
+        downloadButton.setVisible(!busy);
+        cancelButton.setVisible(busy);
+        flavourBox.setDisable(busy);
+        versionBox.setDisable(busy);
+        flashCheck.setDisable(busy);
+        deviceField.setDisable(busy);
+    }
+
+    private void populateVersions(String flavour) {
+        versionBox.getItems().clear();
+        for (String[] parts : itemsByFlavour.getOrDefault(flavour, List.of())) {
+            if (parts.length <= 1 || parts[1].startsWith("http")) continue;
+            String label = (parts.length > 2 && !parts[2].startsWith("http"))
+                    ? (parts[1] + " " + parts[2]).trim()
+                    : parts[1].trim();
+            versionBox.getItems().add(label);
+        }
+        if (!versionBox.getItems().isEmpty()) versionBox.getSelectionModel().selectFirst();
+        setVersionControlsVisible(versionBox.getItems().size() > 1);
+    }
+
+    private void setVersionControlsVisible(boolean visible) {
+        versionLabel.setManaged(visible);
+        versionLabel.setVisible(visible);
+        versionBox.setManaged(visible);
+        versionBox.setVisible(visible);
+    }
+
+    private boolean validateDevice(String device, boolean updateStatusOnSuccess) {
+        if (device.isEmpty()) {
+            showError("No USB selected! Click the device field to choose or enter /dev path.");
+            statusLabel.setText("Invalid device");
+            return false;
+        }
+        if (!device.startsWith("/dev/")) {
+            showError("Device must start with /dev/ (example: /dev/sdb)");
+            statusLabel.setText("Invalid device");
+            return false;
+        }
+        try {
+            if (usb.isProtectedSystemDevice(device)) {
+                showError("Refusing to flash the current system boot/root device.");
+                statusLabel.setText("Protected device");
+                return false;
             }
+        } catch (Exception ex) {
+            showWarning("Could not fully validate device safety: " + ex.getMessage());
+            return false;
+        }
+
+        if (updateStatusOnSuccess) statusLabel.setText("Device selected: " + device);
+        return true;
+    }
+
+    private boolean matchesVersion(String[] data, String selectedVersion) {
+        return data.length < 2
+                || data[1].startsWith("http")
+                || selectedVersion == null
+                || selectedVersion.isBlank()
+                || selectedVersion.contains(data[1])
+                || (data.length > 2 && !data[2].startsWith("http") && selectedVersion.contains(data[2]));
+    }
+
+    private long getExpectedSize(List<String[]> flavourItems, String selectedVersion) {
+        long expectedSize = 0L;
+        for (String[] data : flavourItems) {
+            if (data.length < 4 || !matchesVersion(data, selectedVersion)) continue;
+            for (int p = 3; p < data.length; p++) {
+                try {
+                    long partSize = downloader.getRemoteFileSize(new java.net.URI(data[p]).toURL());
+                    if (partSize <= 0) return -1L;
+                    expectedSize += partSize;
+                } catch (Exception ignored) {
+                    return -1L;
+                }
+            }
+        }
+        return expectedSize == 0 ? -1L : expectedSize;
+    }
+
+    private String getExpectedSha(List<String[]> meta, String edition, String version) {
+        for (String[] data : meta) {
+            if (data.length < 4 || !edition.equals(data[0]) || !matchesVersion(data, version)) continue;
             for (int i = 3; i < data.length; i++) {
                 String candidate = data[i].trim();
-                if (!candidate.startsWith("http")) {
-                    continue;
-                }
+                if (!candidate.startsWith("http")) continue;
                 String sha = engine.getSha256ForIsoUrl(candidate);
-                if (sha != null && !sha.isBlank()) {
-                    return sha;
-                }
+                if (sha != null && !sha.isBlank()) return sha;
             }
         }
         return null;
     }
 
+    private <T> T runOnFxThread(Callable<T> action) throws Exception {
+        if (Platform.isFxApplicationThread()) return action.call();
+        FutureTask<T> task = new FutureTask<>(action);
+        Platform.runLater(task);
+        return task.get();
+    }
 
     private static void configureNativeLibraryPath() {
         try {
             String command = ProcessHandle.current().info().command().orElse(null);
-            if (command == null || command.isBlank()) {
-                return;
-            }
+            if (command == null || command.isBlank()) return;
             Path dir = Paths.get(command).toAbsolutePath().getParent();
-            if (dir == null) {
-                return;
-            }
+            if (dir == null) return;
 
             String dirPath = dir.toString();
             String current = System.getProperty("java.library.path", "");
@@ -758,33 +710,71 @@ public class T2ISO {
                 System.setProperty("java.library.path", dirPath);
                 return;
             }
-            if (!current.contains(dirPath)) {
+            if (!current.contains(dirPath))
                 System.setProperty("java.library.path", dirPath + File.pathSeparator + current);
-            }
         } catch (Exception ignored) {
         }
     }
 
-    public static void main(String[] args) {
-        configureNativeLibraryPath();
-
-        String javaHome = System.getProperty("java.home");
-        if (javaHome == null || javaHome.isBlank()) {
-            String envJavaHome = System.getenv("JAVA_HOME");
-            if (envJavaHome != null && !envJavaHome.isBlank()) {
-                System.setProperty("java.home", envJavaHome);
-            }
-        }
-        if (GraphicsEnvironment.isHeadless()) {
-            System.err.println("No graphical display detected. Set DISPLAY or run in a desktop session.");
-            System.exit(1);
+    @Override
+    public void start(Stage primaryStage) {
+        this.stage = primaryStage;
+        Thread.setDefaultUncaughtExceptionHandler((thread, throwable) -> {
+            String message = throwable == null ? "Unknown error" : throwable.getMessage();
+            if (message == null || message.isBlank())
+                message = throwable == null ? "Unknown error" : throwable.getClass().getSimpleName();
+            String finalMessage = message;
+            Platform.runLater(() -> showAlert(Alert.AlertType.ERROR, "Unexpected Error", finalMessage));
+        });
+        loadSettings();
+        try {
+            engine.readMetadata();
+        } catch (Exception e) {
+            showError(e.getMessage());
             return;
         }
-        try {
-            SwingUtilities.invokeLater(() -> new T2ISO().start());
-        } catch (AWTError e) {
-            System.err.println("Unable to start GUI: " + e.getMessage());
-            System.exit(1);
+        List<String> items = engine.mergeToSingleLine(engine.getMetadata());
+        if (items.isEmpty()) return;
+        itemsByFlavour.clear();
+        for (String line : items) {
+            String[] parts = line.split(",");
+            if (parts.length < 2) continue;
+            parts[0] = parts[0].trim();
+            parts[1] = parts[1].trim();
+            if (parts.length > 2) parts[2] = parts[2].trim();
+            itemsByFlavour.computeIfAbsent(parts[0], key -> new ArrayList<>()).add(parts);
         }
+
+        flavourBox.getItems().clear();
+        Set<String> seen = new HashSet<>();
+        for (String flavour : itemsByFlavour.keySet()) {
+            if (seen.add(flavour)) flavourBox.getItems().add(flavour);
+        }
+        if (!flavourBox.getItems().isEmpty()) flavourBox.getSelectionModel().selectFirst();
+        if (flavourBox.getItems().isEmpty()) {
+            showError("No valid ISO metadata was found.");
+            return;
+        }
+
+        configureActions();
+        BorderPane root = buildLayout();
+        scene = new Scene(root, 520, 380);
+        ThemeUtil.applyTheme(scene, Boolean.parseBoolean(settings.getProperty("darkMode", "false")) ? Boolean.TRUE : null);
+        stage.setTitle("T2 Linux ISO Downloader");
+        stage.setScene(scene);
+        stage.setMinWidth(500);
+        stage.setMinHeight(380);
+        stage.setOnCloseRequest(event -> {
+            if (preventClose) {
+                event.consume();
+                showWarning("Please cancel the current operation before closing.");
+            }
+        });
+        stage.show();
+    }
+
+    public static void main(String[] args) {
+        configureNativeLibraryPath();
+        launch(args);
     }
 }

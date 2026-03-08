@@ -18,8 +18,9 @@ public class CommandList {
         c.addAll(Arrays.asList(commands));
     }
     public void add(String[] commands){
-        for(String i: commands)
-            add(new Command(i));
+        for (String command : commands) {
+            add(new Command(command));
+        }
     }
 
     public void add(String commands){
@@ -27,13 +28,13 @@ public class CommandList {
     }
     public Command get(int i){return c.get(i);}
     public void exec() throws IOException, InterruptedException {
-        for (int i = 0; i < c.size(); i++){
-            get(i).exec();
+        for (Command command : c) {
+            command.exec();
         }
     }
     public void run(){
-        for (int i = 0; i < c.size(); i++){
-            get(i).run();
+        for (Command command : c) {
+            command.run();
         }
     }
     public ArrayList<Command> getCommands(){

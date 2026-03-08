@@ -11,8 +11,8 @@ import java.net.URL;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.LinkedHashMap;
+import java.util.Locale;
 import java.util.Map;
-import java.util.concurrent.atomic.AtomicReference;
 import java.util.regex.Matcher;
 import java.util.regex.Pattern;
 
@@ -38,30 +38,15 @@ public class MDEngine {
     private final String home = System.getProperty("user.home");
     public void readMetadata() throws IOException {
         File dir = new File(home + "/.iso/");
-        dir.mkdirs();
+        boolean dirReady = dir.exists() || dir.mkdirs();
+        if (!dirReady) throw new IOException("Could not create directory: " + dir.getAbsolutePath());
         File jsonFile = new File(dir, "distro-metadata.json");
         contents.clear();
 
-        AtomicReference<IOException> downloadError = new AtomicReference<>();
-        Thread downloadThread = new Thread(() -> {
-            try {
-                Downloader.download(metadata, jsonFile.getAbsolutePath());
-            } catch (IOException e) {
-                downloadError.set(e);
-            }
-        }, "metadata-download-thread");
-        downloadThread.start();
-
         try {
-            downloadThread.join();
-        } catch (InterruptedException e) {
-            Thread.currentThread().interrupt();
-            throw new IOException("Metadata download was interrupted", e);
-        }
-
-        IOException error = downloadError.get();
-        if (error != null && !jsonFile.exists()) {
-            throw error;
+            Downloader.download(metadata, jsonFile.getAbsolutePath());
+        } catch (IOException error) {
+            if (!jsonFile.exists()) throw error;
         }
 
         try (BufferedReader reader = new BufferedReader(new FileReader(jsonFile))) {
@@ -73,40 +58,17 @@ public class MDEngine {
         indexShaByIsoUrl();
     }
     public ArrayList<String> getMetadata() {
-        ArrayList<String> lines = new ArrayList<>();
-
-        String currentName = null;
-
-        for (String line : contents) {
-            if (line.contains("\"name\"")) {
-                currentName = line.replace("\"name\":", "")
-                        .replace("\"", "")
-                        .trim();
-            }
-
-            if (line.contains("https://") && currentName != null) {
-                String url = line.replace(" ", "")
-                        .replace("\"", "")
-                        .trim();
-
-                lines.add(currentName + " " + url);
-                currentName = null; // reset
-            }
-        }
-
-        return lines;
+        return getMetadata(null);
     }
 
     public ArrayList<String> getMetadata(String filter) {
         ArrayList<String> lines = new ArrayList<>();
-
         String currentName = null;
-        String f = filter.toLowerCase();
+        String f = filter == null ? null : filter.toLowerCase(Locale.ROOT);
 
         for (String line : contents) {
-            String lower = line.toLowerCase();
+            String lower = line.toLowerCase(Locale.ROOT);
 
-            // detect new name
             if (lower.contains("\"name\"")) {
                 currentName = line.replace("\"name\":", "")
                         .replace("\"", "")
@@ -114,19 +76,15 @@ public class MDEngine {
                         .trim();
             }
 
-            // detect iso url
             if (lower.contains("http")) {
                 String url = line.replace("\"", "")
                         .replace(",", "")
                         .trim();
-                if (currentName == null || currentName.isBlank()) {
-                    continue;
-                }
+                if (currentName == null || currentName.isBlank()) continue;
 
-                // filter applied to entry
-                if ((currentName != null && currentName.toLowerCase().contains(f))
-                        || url.toLowerCase().contains(f)) {
-
+                if (f == null
+                        || currentName.toLowerCase(Locale.ROOT).contains(f)
+                        || url.toLowerCase(Locale.ROOT).contains(f)) {
                     lines.add(currentName + " " + url);
                 }
             }
@@ -193,9 +151,7 @@ public class MDEngine {
     }
 
     public String getSha256ForIsoUrl(String isoUrl) {
-        if (isoUrl == null || isoUrl.isBlank()) {
-            return null;
-        }
+        if (isoUrl == null || isoUrl.isBlank()) return null;
         return shaByIsoUrl.get(isoUrl.trim());
     }
 
@@ -207,9 +163,7 @@ public class MDEngine {
             String isoBlock = entryMatcher.group(1);
             String suffixBlock = entryMatcher.group(2);
             Matcher shaMatcher = SHA_PATTERN.matcher(suffixBlock);
-            if (!shaMatcher.find()) {
-                continue;
-            }
+            if (!shaMatcher.find()) continue;
             String sha = shaMatcher.group(1).toLowerCase();
             Matcher urlMatcher = URL_PATTERN.matcher(isoBlock);
             while (urlMatcher.find()) {

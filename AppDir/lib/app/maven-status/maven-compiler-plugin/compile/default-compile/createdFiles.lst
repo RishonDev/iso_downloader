@@ -1,10 +1,10 @@
 iso/T2ISO.class
 iso/MDEngine.class
-iso/shellbridge/Command.class
-iso/shellbridge/Script.class
+iso/Main.class
 iso/Downloader.class
-iso/T2ISO$1.class
 iso/USB$FlashCommandResult.class
-iso/shellbridge/CommandList.class
 iso/ThemeUtil.class
 iso/USB.class
+iso/shellbridge/Command.class
+iso/shellbridge/Script.class
+iso/shellbridge/CommandList.class

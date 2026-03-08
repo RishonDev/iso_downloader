@@ -15,14 +15,11 @@ public class Script {
     private final CommandList commandList = new CommandList();
     private final String script;
     public Script(String path){
-        this.script =path;
+        this.script = path;
         setExecutable(true);
     }
     public void setExecutable(boolean exec){
-        if(exec)
-            chmod = new Command("chmod +x " + script);
-        else
-            chmod = new Command("chmod -x " + script);
+        chmod = new Command((exec ? "chmod +x " : "chmod -x ") + script);
         chmod.run();
     }
     public void setOwner(String user){
@@ -33,7 +30,7 @@ public class Script {
         File file = new File(script);
         try (BufferedReader reader = new BufferedReader(new FileReader(file))) {
             String line;
-            while (((line = reader.readLine()) != null)) {
+            while ((line = reader.readLine()) != null) {
                 commandList.getCommands().add(new Command(line));
             }
         }
